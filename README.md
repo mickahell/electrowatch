@@ -41,3 +41,11 @@ arduino-cli upload ${SKETCH} --port ${PORT} --fqbn ${FQBN}
 ```bash
 arduino-cli compile --upload ${SKETCH} --port ${PORT} --fqbn ${FQBN}
 ```
+
+### Debug
+
+```bash
+screen ${PORT} 115200
+```
+
+to exist `ctrl a + k`

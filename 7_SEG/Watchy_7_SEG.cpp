@@ -9,7 +9,7 @@ const uint8_t WEATHER_ICON_WIDTH = 48;
 const uint8_t WEATHER_ICON_HEIGHT = 32;
 
 void Watchy7SEG::drawWatchFace(){
-    Serial.begin(115200);
+    //Serial.begin(115200);
 
     display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
     display.setTextColor(DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
@@ -23,8 +23,8 @@ void Watchy7SEG::drawWatchFace(){
         display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     }
 
-    setupFS();
-    syncAPI();
+    //setupFS();
+    //syncAPI();
 }
 
 void Watchy7SEG::drawTime(){
@@ -164,20 +164,20 @@ void Watchy7SEG::setupFS(){
 }
 
 void Watchy7SEG::syncAPI(){
-	if (currentTime.Minute == 59 && sensor.getCounter() > 0){
+	if (currentTime.Minute % 2 == 0){
 		String day_api = (currentTime.Day < 10) ? ("0" + String(currentTime.Day)) : String(currentTime.Day);
 		String month_api = (currentTime.Month < 10) ? ("0" + String(currentTime.Month)) : String(currentTime.Month);
-		String date_api = day_api + "-" + month_api + "-" + String(currentTime.Year);
+		String date_api = day_api + "-" + month_api + "-" + String(currentTime.Year + 1970);
 
 		String hour_api = (currentTime.Hour < 10) ? ("0" + String(currentTime.Hour)) : String(currentTime.Hour);
-		String json_steps = "{\"event_type\":" + String(ENDPOINT_API) + ",\"client_payload\":{\"data-name\":" + String(ENDPOINT_STEPS) + ",\"date\":" + date_api + ",\"hour\":" + hour_api + ",\"data\":" + String(sensor.getCounter()) + "}}";
+		String json_steps = "{\"event_type\":\"" + String(ENDPOINT_API) + "\",\"client_payload\":{\"data-name\":\"" + String(ENDPOINT_STEPS) + "\",\"date\":\"" + date_api + "\",\"hour\":\"" + hour_api + "\",\"data\":\"" + String(sensor.getCounter()) + "\"}}";
 
 		FSData file_system;
 		if (WIFI_CONFIGURED) {
 			// Steps
 			SendData::pushAPIData(json_steps);
 			// Sync old data steps
-			file_system.listDir(LittleFS, STEPS_FOLDER, 1);
+			file_system.listDir(LittleFS, STEPS_FOLDER);
 			for(const String& file : file_system.files) {
 				String file_name = String(STEPS_FOLDER) + "/" + file;
 				const char * fname = file_name.c_str();
