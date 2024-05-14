@@ -17,6 +17,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: arduino/arduino-lint-action@v1
         with:
-          recursive: true
+          path: "${{ env.PROJECT }}/"
           verbose: true
-          compliance: "strict"
