@@ -18,3 +18,5 @@ jobs:
       - uses: arduino/arduino-lint-action@v1
         with:
           path: "${{ env.PROJECT }}/"
+          verbose: true
+          compliance: "strict"
