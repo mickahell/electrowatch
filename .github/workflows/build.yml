@@ -17,10 +17,18 @@ jobs:
     - name: Prerequisites
       run: mv "${{ env.PROJECT }}/parameters.h.example" "${{ env.PROJECT }}/parameters.h"
 
-    - uses: ArminJo/arduino-test-compile@v3
+    - uses: arduino/compile-sketches@v1
       with:
-        arduino-board-fqbn: esp32:esp32:watchy:Revision=v20,PartitionScheme=huge_app,UploadSpeed=921600,DebugLevel=none
-        platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-        required-libraries: sqfmi/Watchy
-        sketch-names-find-start: "${{ env.PROJECT }}/"
-        sketch-names: "${{ env.PROJECT }}.ino"
+        fqbn: esp32:esp32:esp32
+        platforms: |
+          - name: esp32:esp32
+            source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+        sketch-paths: "${{ env.PROJECT }}/${{ env.PROJECT }}.ino"
+        libraries: |
+          - name: Watchy
+        cli-compile-flags: |
+          - --build-property
+          - build.partitions=huge_app
+          - --build-property
+          - upload.maximum_size=921600
+        enable-deltas-report: true
