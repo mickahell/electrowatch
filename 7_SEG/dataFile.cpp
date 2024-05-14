@@ -49,9 +49,10 @@ void FSData::readFile(fs::FS &fs, const char * path){
         return;
     }
 
-    //Serial.println("- read from file:");
+    //Serial.println("- read from file: ");
     while(file.available()){
-        content = file.read();
+        content = file.readString();
+        //Serial.println(content);
     }
     file.close();
 }
@@ -86,10 +87,10 @@ void FSData::renameFile(fs::FS &fs, const char * path1, const char * path2){
 }
 
 void FSData::deleteFile(fs::FS &fs, const char * path){
-    Serial.printf("Deleting file: %s\r\n", path);
+    //Serial.printf("Deleting file: %s\r\n", path);
     if(fs.remove(path)){
-        Serial.println("- file deleted");
+        //Serial.println("- file deleted");
     } else {
-        Serial.println("- delete failed");
+        //Serial.println("- delete failed");
     }
 }

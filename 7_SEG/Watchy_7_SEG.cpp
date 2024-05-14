@@ -23,8 +23,8 @@ void Watchy7SEG::drawWatchFace(){
         display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     }
 
-    //setupFS();
-    //syncAPI();
+    setupFS();
+    syncAPI();
 }
 
 void Watchy7SEG::drawTime(){
@@ -164,7 +164,7 @@ void Watchy7SEG::setupFS(){
 }
 
 void Watchy7SEG::syncAPI(){
-	if (currentTime.Minute % 2 == 0){
+    if (currentTime.Minute == 59 && sensor.getCounter() > 0){
 		String day_api = (currentTime.Day < 10) ? ("0" + String(currentTime.Day)) : String(currentTime.Day);
 		String month_api = (currentTime.Month < 10) ? ("0" + String(currentTime.Month)) : String(currentTime.Month);
 		String date_api = day_api + "-" + month_api + "-" + String(currentTime.Year + 1970);
@@ -173,24 +173,25 @@ void Watchy7SEG::syncAPI(){
 		String json_steps = "{\"event_type\":\"" + String(ENDPOINT_API) + "\",\"client_payload\":{\"data-name\":\"" + String(ENDPOINT_STEPS) + "\",\"date\":\"" + date_api + "\",\"hour\":\"" + hour_api + "\",\"data\":\"" + String(sensor.getCounter()) + "\"}}";
 
 		FSData file_system;
-		if (WIFI_CONFIGURED) {
+		if (connectWiFi()) {
 			// Steps
 			SendData::pushAPIData(json_steps);
+
 			// Sync old data steps
 			file_system.listDir(LittleFS, STEPS_FOLDER);
 			for(const String& file : file_system.files) {
 				String file_name = String(STEPS_FOLDER) + "/" + file;
 				const char * fname = file_name.c_str();
-
 				file_system.readFile(LittleFS, fname);
-				SendData::pushAPIData(file_system.content);
+
+				SendData::pushAPIData(String(file_system.content));
 				FSData::deleteFile(LittleFS, fname);
 			}
 
 			// turn off radios
 			WiFi.mode(WIFI_OFF);
 			btStop();
-		} else { // No WiFi, register in file
+		} else { // No WiFi, register into a file
 			String file_name = String(STEPS_FOLDER) + "/" + date_api + "_" + hour_api + ".txt";
 			const char * fname = file_name.c_str();
 			const char * json_content = json_steps.c_str();
