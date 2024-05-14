@@ -18,8 +18,6 @@ watchySettings settings{
     .weatherUpdateInterval = WEATHER_UPDATE_INTERVAL,
     .ntpServer = NTP_SERVER,
     .gmtOffset = GMT_OFFSET_SEC,
-    .wifiSSID = WIFI_SSID,
-    .wifiPass = WIFI_PASS,
     .vibrateOClock = true,
 };
 
