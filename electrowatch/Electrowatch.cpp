@@ -8,6 +8,27 @@ const uint8_t BATTERY_SEGMENT_SPACING = 9;
 const uint8_t WEATHER_ICON_WIDTH = 48;
 const uint8_t WEATHER_ICON_HEIGHT = 32;
 
+bool Watchy7SEG::connectWiFi() {
+  if (WL_CONNECT_FAILED ==
+      WiFi.begin(WIFI_SSID, WIFI_PASS)) { // WiFi not setup, you can also use hard coded credentials
+                      // with WiFi.begin(SSID,PASS);
+    WIFI_CONFIGURED = false;
+  } else {
+    if (WL_CONNECTED ==
+        WiFi.waitForConnectResult()) { // attempt to connect for 10s
+      lastIPAddress = WiFi.localIP();
+      WiFi.SSID().toCharArray(lastSSID, 30);
+      WIFI_CONFIGURED = true;
+    } else { // connection failed, time out
+      WIFI_CONFIGURED = false;
+      // turn off radios
+      WiFi.mode(WIFI_OFF);
+      btStop();
+    }
+  }
+  return WIFI_CONFIGURED;
+}
+
 void Watchy7SEG::drawWatchFace(){
     //Serial.begin(115200);
 

@@ -7,6 +7,7 @@
 #include "DSEG7_Classic_Bold_25.h"
 #include "DSEG7_Classic_Regular_39.h"
 #include "icons.h"
+#include "parameters.h"
 
 #include "sendData.h"
 #include "dataFile.h"
@@ -14,6 +15,7 @@
 class Watchy7SEG : public Watchy{
     using Watchy::Watchy;
     public:
+        bool connectWiFi();
         void drawWatchFace();
         void drawTime();
         void drawDate();
