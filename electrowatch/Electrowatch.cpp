@@ -2,9 +2,6 @@
 
 #define DARKMODE true
 
-RTC_DATA_ATTR uint32_t lastIPAddress;
-RTC_DATA_ATTR char lastSSID[30];
-
 const uint8_t BATTERY_SEGMENT_WIDTH = 7;
 const uint8_t BATTERY_SEGMENT_HEIGHT = 11;
 const uint8_t BATTERY_SEGMENT_SPACING = 9;
@@ -16,8 +13,6 @@ bool Watchy7SEG::connectWiFi() {
         WIFI_CONFIGURED = false;
     } else {
         if (WL_CONNECTED == WiFi.waitForConnectResult()) { // attempt to connect for 10s
-            lastIPAddress = WiFi.localIP();
-            WiFi.SSID().toCharArray(lastSSID, 30);
             WIFI_CONFIGURED = true;
         } else { // connection failed, time out
             WIFI_CONFIGURED = false;
