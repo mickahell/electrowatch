@@ -1,17 +1,15 @@
 #include "dataFile.h"
 
-// You only need to format LittleFS the first time you run a
-// test or else use the LITTLEFS plugin to create a partition 
-// https://github.com/lorol/arduino-esp32littlefs-plugin
-
 void FSData::listDir(fs::FS &fs, const char * dirname){
 	//Serial.printf("Listing directory: %s\r\n", dirname);
+	File root;
+	File file;
 
 	while (!files.empty()){
 		files.pop_back();
 	}
 
-	File root = fs.open(dirname);
+	root = fs.open(dirname);
 	if(!root){
 		//Serial.println("- failed to open directory");
 		return;
@@ -21,7 +19,7 @@ void FSData::listDir(fs::FS &fs, const char * dirname){
 		return;
 	}
 
-	File file = root.openNextFile();
+	file = root.openNextFile();
 	while(file){
 		if(!file.isDirectory()){
 			//Serial.print("  FILE : ");
@@ -42,8 +40,9 @@ void FSData::removeDir(fs::FS &fs, const char * path){
 
 void FSData::readFile(fs::FS &fs, const char * path){
 	//Serial.printf("Reading file: %s\r\n", path);
+	File file;
 
-	File file = fs.open(path);
+	file = fs.open(path);
 	if(!file || file.isDirectory()){
 		//Serial.println("- failed to open file for reading");
 		return;
@@ -59,22 +58,20 @@ void FSData::readFile(fs::FS &fs, const char * path){
 
 void FSData::writeFile(fs::FS &fs, const char * path, const char * message){
 	//Serial.printf("Writing file: %s\r\n", path);
+	File file;
 
-	File file = fs.open(path, FILE_WRITE);
+	file = fs.open(path, FILE_WRITE);
 	if(!file){
 		//Serial.println("- failed to open file for writing");
 		return;
 	}
-	if(file.print(message)){
-		//Serial.println("- file written");
-	} else {
-		//Serial.println("- write failed");
-	}
+	file.print(message);
 	file.close();
 }
 
 void FSData::appendFile(fs::FS &fs, const char * path, const char * message){
-	File file = fs.open(path, FILE_APPEND);
+	File file;
+	file = fs.open(path, FILE_APPEND);
 	if(!file){
 		return;
 	}
@@ -87,10 +84,5 @@ void FSData::renameFile(fs::FS &fs, const char * path1, const char * path2){
 }
 
 void FSData::deleteFile(fs::FS &fs, const char * path){
-	//Serial.printf("Deleting file: %s\r\n", path);
-	if(fs.remove(path)){
-		//Serial.println("- file deleted");
-	} else {
-		//Serial.println("- delete failed");
-	}
+	fs.remove(path);
 }

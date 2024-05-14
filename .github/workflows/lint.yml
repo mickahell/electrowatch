@@ -15,11 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: cpp-linter/cpp-linter-action@v2
-        id: linter
+      - uses: arduino/arduino-lint-action@v1
         with:
-          step-summary: true
-      - name: Fail fast?!
-        if: steps.linter.outputs.checks-failed > 0
-        run: exit 1
+          path: "${{ env.PROJECT }}/"
