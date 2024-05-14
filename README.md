@@ -1,6 +1,6 @@
 # Watchy - WIP
 
-[![cpp-linter](https://github.com/cpp-linter/cpp-linter-action/actions/workflows/cpp-linter.yml/badge.svg)](https://github.com/cpp-linter/cpp-linter-action/actions/workflows/cpp-linter.yml)
+[![cpp-linter](https://github.com/cpp-linter/cpp-linter-action/actions/workflows/cpp-linter.yml/badge.svg)](https://github.com/mickahell/Watchy/actions/workflows/lint.yml)
 
 As I need to edit the main lib to do what I want/need to do. I had to fork the main repo to create my own version of the Watchy.
 
