@@ -1,17 +1,17 @@
 {
-  "name": "Watchy",
-  "version": "1.4.10",
-  "description": "Watchy - An Open Source E-Paper Watch by SQFMI",
+  "name": "Electrowatch",
+  "version": "0.0.1",
+  "description": "Electrowatch - An Open Source E-Paper Watch based on SQFMI Watchy",
   "authors": [
     {
-      "name": "SQFMI",
-      "url": "https://github.com/sqfmi"
+      "name": "Mickahell",
+      "url": "https://github.com/mickahell"
     }
   ],
-  "homepage": "https://watchy.sqfmi.com",
+  "homepage": "",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sqfmi/Watchy.git"
+    "url": "https://github.com/mickahell/Watchy.git"
   },
   "frameworks": "arduino",
   "platforms": ["espressif32"],
