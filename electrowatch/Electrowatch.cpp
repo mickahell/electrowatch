@@ -1,4 +1,4 @@
-#include "Watchy_7_SEG.h"
+#include "Electrowatch.h"
 
 #define DARKMODE true
 

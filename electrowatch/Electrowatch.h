@@ -1,5 +1,5 @@
-#ifndef WATCHY_7_SEG_H
-#define WATCHY_7_SEG_H
+#ifndef ELECTROWATCH_H
+#define ELECTROWATCH_H
 
 #include <Watchy.h>
 #include "Seven_Segment10pt7b.h"
