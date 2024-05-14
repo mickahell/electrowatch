@@ -1,5 +1,7 @@
 # Watchy - WIP
 
+[![cpp-linter](https://github.com/cpp-linter/cpp-linter-action/actions/workflows/cpp-linter.yml/badge.svg)](https://github.com/cpp-linter/cpp-linter-action/actions/workflows/cpp-linter.yml)
+
 As I need to edit the main lib to do what I want/need to do. I had to fork the main repo to create my own version of the Watchy.
 
 It's this a work in progress and be considere as experimental !
@@ -48,4 +50,4 @@ arduino-cli compile --upload ${SKETCH} --port ${PORT} --fqbn ${FQBN}
 screen ${PORT} 115200
 ```
 
-to exist `ctrl a + k`
+to exit `ctrl a + k`
