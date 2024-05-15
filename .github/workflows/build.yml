@@ -17,7 +17,7 @@ jobs:
     - name: Prerequisites
       run: |
         mv "parameters.h.example" "parameters.h"
-        sudo apt-get install arduino-cli
+        brew install arduino-cli
 
     - name: Install lib and platform
       run: |
