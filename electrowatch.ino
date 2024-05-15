@@ -1,5 +1,5 @@
-#include "Electrowatch.h"
-#include "settings.h"
+#include "src/Electrowatch.h"
+#include "src/settings.h"
 
 Watchy7SEG watchy(settings);
 

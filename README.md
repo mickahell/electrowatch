@@ -10,7 +10,7 @@ It's this a work in progress and be considere as experimental !
 
 ### Set seetings
 
-First you need to edit the [parameters file](7_SEG/parameters.h.example) with your informations and rename it to `parameters.h`.
+First you need to edit the [parameters file](parameters.h.example) with your informations and rename it to `parameters.h`.
 
 ### Compile & Upload
 
@@ -19,7 +19,7 @@ In order to build and upload the Watchy from cmd line :
 #### Setup some vars
 
 ```bash
-export SKETCH="7_SEG/7_SEG.ino"
+export SKETCH="electrowatch.ino"
 export FQBN="esp32:esp32:watchy:Revision=v20,PartitionScheme=huge_app,UploadSpeed=921600,DebugLevel=none"
 export PORT="/dev/cu.wchusbserial56230332171"
 ```

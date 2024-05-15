@@ -1,7 +1,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include "parameters.h"
+#include "../parameters.h"
 
 watchySettings settings{
     #ifdef CITY_ID
