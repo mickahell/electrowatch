@@ -17,6 +17,7 @@ jobs:
     - name: Prerequisites
       run: |
         mv "parameters.h.example" "parameters.h"
+        sudo apt-get install python3-libusb1
         sudo snap install arduino-cli
 
     - name: Install lib and platform
