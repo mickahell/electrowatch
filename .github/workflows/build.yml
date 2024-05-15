@@ -18,7 +18,8 @@ jobs:
       run: |
         mv "parameters.h.example" "parameters.h"
         sudo apt-get install python3-libusb1
-        sudo snap install arduino-cli
+        wget -qO arduino-cli.tar.gz https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz
+        sudo tar xf arduino-cli.tar.gz -C /usr/local/bin arduino-cli
 
     - name: Install lib and platform
       run: |
