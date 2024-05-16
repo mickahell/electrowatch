@@ -5,6 +5,7 @@ const uint8_t BATTERY_SEGMENT_HEIGHT = 11;
 const uint8_t BATTERY_SEGMENT_SPACING = 9;
 const uint8_t WEATHER_ICON_WIDTH = 48;
 const uint8_t WEATHER_ICON_HEIGHT = 32;
+int PSTEPS = 0;
 
 bool Watchy7SEG::connectWiFi() {
     if (WL_CONNECT_FAILED == WiFi.begin(WIFI_SSID, WIFI_PASS)) {
@@ -178,13 +179,18 @@ void Watchy7SEG::setupFS() {
 }
 
 void Watchy7SEG::syncAPI() {
-    if (currentTime.Minute == 59 && sensor.getCounter() > 0) {
+    int cSteps = sensor.getCounter();
+    if (currentTime.Hour == 0 && currentTime.Minute == 0) {
+        PSTEPS = cSteps;
+    }
+    if (currentTime.Minute == 59 && cSteps > PSTEPS) {
 		String day_api = (currentTime.Day < 10) ? ("0" + String(currentTime.Day)) : String(currentTime.Day);
 		String month_api = (currentTime.Month < 10) ? ("0" + String(currentTime.Month)) : String(currentTime.Month);
 		String date_api = day_api + "-" + month_api + "-" + String(currentTime.Year + 1970);
 
 		String hour_api = (currentTime.Hour < 10) ? ("0" + String(currentTime.Hour)) : String(currentTime.Hour);
-		String json_steps = "{\"event_type\":\"" + String(ENDPOINT_API) + "\",\"client_payload\":{\"data-name\":\"" + String(ENDPOINT_STEPS) + "\",\"date\":\"" + date_api + "\",\"hour\":\"" + hour_api + "\",\"data\":\"" + String(sensor.getCounter()) + "\"}}";
+        int aSteps = cSteps - PSTEPS;
+		String json_steps = "{\"event_type\":\"" + String(ENDPOINT_API) + "\",\"client_payload\":{\"data-name\":\"" + String(ENDPOINT_STEPS) + "\",\"date\":\"" + date_api + "\",\"hour\":\"" + hour_api + "\",\"data\":\"" + String(aSteps) + "\"}}";
 
 		FSData file_system;
 		if (connectWiFi()) {
@@ -200,6 +206,11 @@ void Watchy7SEG::syncAPI() {
 
 				SendData::pushAPIData(String(file_system.content));
 				FSData::deleteFile(LittleFS, fname);
+                int pTime = currentTime.Second + 5;
+                int fTime = currentTime.Second;
+                while (pTime > fTime) {
+                    fTime = currentTime.Second;
+                }
 			}
 
 			// turn off radios
@@ -212,4 +223,5 @@ void Watchy7SEG::syncAPI() {
 			FSData::writeFile(LittleFS, fname, json_content);
 		}
 	}
+    PSTEPS = cSteps;
 }
