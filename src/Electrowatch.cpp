@@ -5,7 +5,7 @@ const uint8_t BATTERY_SEGMENT_HEIGHT = 11;
 const uint8_t BATTERY_SEGMENT_SPACING = 9;
 const uint8_t WEATHER_ICON_WIDTH = 48;
 const uint8_t WEATHER_ICON_HEIGHT = 32;
-int PSTEPS = 0;
+RTC_DATA_ATTR int PSTEPS = 0;
 
 bool Watchy7SEG::connectWiFi() {
     if (WL_CONNECT_FAILED == WiFi.begin(WIFI_SSID, WIFI_PASS)) {
