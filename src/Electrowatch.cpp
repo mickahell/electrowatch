@@ -206,11 +206,6 @@ void Watchy7SEG::syncAPI() {
 
 				SendData::pushAPIData(String(file_system.content));
 				FSData::deleteFile(LittleFS, fname);
-                int pTime = currentTime.Second + 5;
-                int fTime = currentTime.Second;
-                while (pTime > fTime) {
-                    fTime = currentTime.Second;
-                }
 			}
 
 			// turn off radios
