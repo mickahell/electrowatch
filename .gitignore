@@ -70,3 +70,4 @@ nbproject
 .vscode
 .envrc
 **/parameters.h
+.cpp-linter_cache

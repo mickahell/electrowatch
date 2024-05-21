@@ -1,14 +1,29 @@
-#include "Watchy_7_SEG.h"
-
-#define DARKMODE true
+#include "Electrowatch.h"
 
 const uint8_t BATTERY_SEGMENT_WIDTH = 7;
 const uint8_t BATTERY_SEGMENT_HEIGHT = 11;
 const uint8_t BATTERY_SEGMENT_SPACING = 9;
 const uint8_t WEATHER_ICON_WIDTH = 48;
 const uint8_t WEATHER_ICON_HEIGHT = 32;
+RTC_DATA_ATTR int PSTEPS = 0;
 
-void Watchy7SEG::drawWatchFace(){
+bool Watchy7SEG::connectWiFi() {
+    if (WL_CONNECT_FAILED == WiFi.begin(WIFI_SSID, WIFI_PASS)) {
+        WIFI_CONFIGURED = false;
+    } else {
+        if (WL_CONNECTED == WiFi.waitForConnectResult()) { // attempt to connect for 10s
+            WIFI_CONFIGURED = true;
+        } else { // connection failed, time out
+            WIFI_CONFIGURED = false;
+            // turn off radios
+            WiFi.mode(WIFI_OFF);
+            btStop();
+        }
+    }
+    return WIFI_CONFIGURED;
+}
+
+void Watchy7SEG::drawWatchFace() {
     //Serial.begin(115200);
 
     display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
@@ -19,7 +34,7 @@ void Watchy7SEG::drawWatchFace(){
     drawWeather();
     drawBattery();
     display.drawBitmap(120, 77, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-    if(BLE_CONFIGURED){
+    if(BLE_CONFIGURED) {
         display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     }
 
@@ -27,27 +42,27 @@ void Watchy7SEG::drawWatchFace(){
     syncAPI();
 }
 
-void Watchy7SEG::drawTime(){
+void Watchy7SEG::drawTime() {
     display.setFont(&DSEG7_Classic_Bold_53);
     display.setCursor(5, 53+5);
     int displayHour;
-    if(HOUR_12_24==12){
+    if(HOUR_12_24==12) {
     	displayHour = ((currentTime.Hour+11)%12)+1;
     } else {
     	displayHour = currentTime.Hour;
     }
-    if(displayHour < 10){
+    if(displayHour < 10) {
         display.print("0");
     }
     display.print(displayHour);
     display.print(":");
-    if(currentTime.Minute < 10){
+    if(currentTime.Minute < 10) {
         display.print("0");
     }
     display.println(currentTime.Minute);
 }
 
-void Watchy7SEG::drawDate(){
+void Watchy7SEG::drawDate() {
     display.setFont(&Seven_Segment10pt7b);
 
     int16_t  x1, y1;
@@ -55,7 +70,7 @@ void Watchy7SEG::drawDate(){
 
     String dayOfWeek = dayStr(currentTime.Wday);
     display.getTextBounds(dayOfWeek, 5, 85, &x1, &y1, &w, &h);
-    if(currentTime.Wday == 4){
+    if(currentTime.Wday == 4) {
         w = w - 5;
     }
     display.setCursor(85 - w, 85);
@@ -68,14 +83,14 @@ void Watchy7SEG::drawDate(){
 
     display.setFont(&DSEG7_Classic_Bold_25);
     display.setCursor(5, 120);
-    if(currentTime.Day < 10){
-    display.print("0");
+    if(currentTime.Day < 10) {
+        display.print("0");
     }
     display.println(currentTime.Day);
     display.setCursor(5, 150);
     display.println(tmYearToCalendar(currentTime.Year));// offset from 1970, since year is stored in uint8_t
 }
-void Watchy7SEG::drawSteps(){
+void Watchy7SEG::drawSteps() {
     // reset step counter at midnight
     if (currentTime.Hour == 0 && currentTime.Minute == 0){
     	sensor.resetStepCounter();
@@ -85,30 +100,30 @@ void Watchy7SEG::drawSteps(){
     display.setCursor(35, 190);
     display.println(stepCount);
 }
-void Watchy7SEG::drawBattery(){
+void Watchy7SEG::drawBattery() {
     display.drawBitmap(154, 73, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     display.fillRect(159, 78, 27, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);//clear battery segments
     int8_t batteryLevel = 0;
     float VBAT = getBatteryVoltage();
-    if(VBAT > 4.1){
+    if(VBAT > 4.1) {
         batteryLevel = 3;
     }
-    else if(VBAT > 3.95 && VBAT <= 4.1){
+    else if(VBAT > 3.95 && VBAT <= 4.1) {
         batteryLevel = 2;
     }
-    else if(VBAT > 3.80 && VBAT <= 3.95){
+    else if(VBAT > 3.80 && VBAT <= 3.95) {
         batteryLevel = 1;
     }
-    else if(VBAT <= 3.80){
+    else if(VBAT <= 3.80) {
         batteryLevel = 0;
     }
 
-    for(int8_t batterySegments = 0; batterySegments < batteryLevel; batterySegments++){
+    for(int8_t batterySegments = 0; batterySegments < batteryLevel; batterySegments++) {
         display.fillRect(159 + (batterySegments * BATTERY_SEGMENT_SPACING), 78, BATTERY_SEGMENT_WIDTH, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     }
 }
 
-void Watchy7SEG::drawWeather(){
+void Watchy7SEG::drawWeather() {
 
     weatherData currentWeather = getWeatherData();
 
@@ -119,9 +134,9 @@ void Watchy7SEG::drawWeather(){
     int16_t  x1, y1;
     uint16_t w, h;
     display.getTextBounds(String(temperature), 0, 0, &x1, &y1, &w, &h);
-    if(159 - w - x1 > 87){
+    if(159 - w - x1 > 87) {
         display.setCursor(159 - w - x1, 150);
-    }else{
+    } else {
         display.setFont(&DSEG7_Classic_Bold_25);
         display.getTextBounds(String(temperature), 0, 0, &x1, &y1, &w, &h);
         display.setCursor(159 - w - x1, 136);
@@ -130,7 +145,7 @@ void Watchy7SEG::drawWeather(){
     display.drawBitmap(165, 110, currentWeather.isMetric ? celsius : fahrenheit, 26, 20, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
     const unsigned char* weatherIcon;
 
-    if(WIFI_CONFIGURED){
+    if(WIFI_CONFIGURED) {
     	//https://openweathermap.org/weather-conditions
     	if(weatherConditionCode > 801){//Cloudy
     	  weatherIcon = cloudy;
@@ -157,20 +172,25 @@ void Watchy7SEG::drawWeather(){
     display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 }
 
-void Watchy7SEG::setupFS(){
+void Watchy7SEG::setupFS() {
 	LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED);
 	FSData::createDir(LittleFS, DATA_FOLDER);
 	FSData::createDir(LittleFS, STEPS_FOLDER);
 }
 
-void Watchy7SEG::syncAPI(){
-    if (currentTime.Minute == 59 && sensor.getCounter() > 0){
+void Watchy7SEG::syncAPI() {
+    int cSteps = sensor.getCounter();
+    if (currentTime.Hour == 0 && currentTime.Minute == 0) {
+        PSTEPS = cSteps;
+    }
+    if (currentTime.Minute == 59 && cSteps > PSTEPS) {
 		String day_api = (currentTime.Day < 10) ? ("0" + String(currentTime.Day)) : String(currentTime.Day);
 		String month_api = (currentTime.Month < 10) ? ("0" + String(currentTime.Month)) : String(currentTime.Month);
 		String date_api = day_api + "-" + month_api + "-" + String(currentTime.Year + 1970);
 
 		String hour_api = (currentTime.Hour < 10) ? ("0" + String(currentTime.Hour)) : String(currentTime.Hour);
-		String json_steps = "{\"event_type\":\"" + String(ENDPOINT_API) + "\",\"client_payload\":{\"data-name\":\"" + String(ENDPOINT_STEPS) + "\",\"date\":\"" + date_api + "\",\"hour\":\"" + hour_api + "\",\"data\":\"" + String(sensor.getCounter()) + "\"}}";
+        int aSteps = cSteps - PSTEPS;
+		String json_steps = "{\"event_type\":\"" + String(ENDPOINT_API) + "\",\"client_payload\":{\"data-name\":\"" + String(ENDPOINT_STEPS) + "\",\"date\":\"" + date_api + "\",\"hour\":\"" + hour_api + "\",\"data\":\"" + String(aSteps) + "\"}}";
 
 		FSData file_system;
 		if (connectWiFi()) {
@@ -197,5 +217,6 @@ void Watchy7SEG::syncAPI(){
 			const char * json_content = json_steps.c_str();
 			FSData::writeFile(LittleFS, fname, json_content);
 		}
+        PSTEPS = cSteps;
 	}
 }

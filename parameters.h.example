@@ -21,6 +21,8 @@
 //NTP Settings
 #define NTP_SERVER "pool.ntp.org"
 #define GMT_OFFSET_SEC 3600 * 2 //New York is UTC -5 EST, -4 EDT, will be overwritten by weather data
+// Face params
+#define DARKMODE true
 // WIFI Settings
 #define WIFI_SSID "Pastabox-test"
 #define WIFI_PASS "test"
