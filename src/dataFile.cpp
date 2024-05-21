@@ -45,14 +45,14 @@ void FSData::readFile(fs::FS &fs, const char * path){
 
     File file = fs.open(path);
     if(!file || file.isDirectory()){
-        //Serial.println("- failed to open file for reading");
+        Serial.println("- failed to open file for reading");
         return;
     }
 
-    //Serial.println("- read from file: ");
+    Serial.println("- read from file: ");
     while(file.available()){
         content = file.readString();
-        //Serial.println(content);
+        Serial.println(content);
     }
     file.close();
 }

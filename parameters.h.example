@@ -18,14 +18,23 @@
 #define TEMP_UNIT "metric" //metric = Celsius , imperial = Fahrenheit
 #define TEMP_LANG "fr"
 #define WEATHER_UPDATE_INTERVAL 30 //must be greater than 5, measured in minutes
+
 //NTP Settings
 #define NTP_SERVER "pool.ntp.org"
 #define GMT_OFFSET_SEC 3600 * 2 //New York is UTC -5 EST, -4 EDT, will be overwritten by weather data
+
 // Face params
 #define DARKMODE true
+
 // WIFI Settings
 #define WIFI_SSID "Pastabox-test"
 #define WIFI_PASS "test"
+
+// Blague du jour
+#define BLAGUE_TYPE "dev"
+#define BLAGUE_URL "https://www.blagues-api.fr/api/type/" + String(BLAGUE_TYPE) + "/random"
+#define BLAGUE_TOKEN "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNDE5OTExNjM0ODI0MjAwMjEyIiwibGltaXQiOjEwMCwia2V5IjoibzROb3lrak4zVkluaWpoakRCQTIxV0VkN2Yxbk5mSGRaNHd2dmh5SEw1Y3Y4TFFoV0giLCJjcmVhdGVkX2F0IjoiMjAyNC0wNS0yMVQxNzowMzo0MiswMDowMCIsImlhdCI6MTcxNjMxMTAyMn0.6hZBSrc7w582S8WvpTqig-xPggXRf10NQIa3cKd-vEo"
+
 // DATA API
 #define API_URL ""
 #define API_TOKEN ""

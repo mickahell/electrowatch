@@ -12,11 +12,19 @@
 #include "sendData.h"
 #include "dataFile.h"
 
+typedef struct blagueData {
+  String type;
+  String blague;
+  String answer;
+} blagueData;
+
 class Watchy7SEG : public Watchy{
     using Watchy::Watchy;
     public:
         bool connectWiFi();
+        void handleButtonPress();
         void drawWatchFace();
+
         void drawTime();
         void drawDate();
         void drawSteps();
@@ -24,6 +32,12 @@ class Watchy7SEG : public Watchy{
         void drawBattery();
         void setupFS();
         void syncAPI();
+        void getBlagueDuJour();
+        void showJoke();
 };
+
+extern RTC_DATA_ATTR int PSTEPS;
+extern RTC_DATA_ATTR bool GET_DATA;
+extern RTC_DATA_ATTR blagueData BLAGUE_DU_JOUR;
 
 #endif

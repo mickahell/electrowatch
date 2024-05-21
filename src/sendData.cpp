@@ -4,7 +4,6 @@ void SendData::pushAPIData(String json) {
 
   HTTPClient https;
 
-  https.setConnectTimeout(10000);
   WiFiClientSecure newSecure;
   newSecure.setInsecure();
   https.begin(newSecure, API_URL);
