@@ -217,6 +217,6 @@ void Watchy7SEG::syncAPI() {
 			const char * json_content = json_steps.c_str();
 			FSData::writeFile(LittleFS, fname, json_content);
 		}
+        PSTEPS = cSteps;
 	}
-    PSTEPS = cSteps;
 }
