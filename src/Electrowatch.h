@@ -32,7 +32,7 @@ class Watchy7SEG : public Watchy{
         void drawBattery();
         void setupFS();
         void syncAPI();
-        void getBlagueDuJour();
+        void getBlagueDuJour(int nb_blague);
         void showJoke();
 };
 

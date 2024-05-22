@@ -27,7 +27,7 @@ void Watchy7SEG::drawWatchFace() {
 
 	setupFS();
 	syncAPI();
-	getBlagueDuJour();
+	getBlagueDuJour(10);
 }
 
 void Watchy7SEG::drawTime() {
@@ -164,6 +164,7 @@ void Watchy7SEG::setupFS() {
 	LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED);
 	FSData::createDir(LittleFS, DATA_FOLDER);
 	FSData::createDir(LittleFS, STEPS_FOLDER);
+	FSData::createDir(LittleFS, JOKES_FOLDER);
 	LittleFS.end();
 }
 
@@ -212,15 +213,13 @@ void Watchy7SEG::syncAPI() {
 	}
 }
 
-void Watchy7SEG::getBlagueDuJour() {
+void Watchy7SEG::getBlagueDuJour(int nb_blague) {
 	if (currentTime.Hour == 0 && currentTime.Minute == 0) {
 		GET_DATA = true;
 	}
 	if (GET_DATA) {
 		LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED);
 		FSData file_system;
-		String file_name = String(DATA_FOLDER) + "/blaguedujour.txt";
-		const char * fname = file_name.c_str();
 		if (connectWiFi()) {
 			HTTPClient https;
 
@@ -229,22 +228,29 @@ void Watchy7SEG::getBlagueDuJour() {
 			https.begin(newSecure, BLAGUE_URL);
 
 			https.addHeader("Authorization", "Bearer " + String(BLAGUE_TOKEN));
-			int httpsResponseCode = https.GET();
 
-			if (200 <= httpsResponseCode && httpsResponseCode < 300) {
-				String payload = https.getString();
-				JSONVar responseObject = JSON.parse(payload);
-				BLAGUE_DU_JOUR.type = JSONVar::stringify(responseObject["type"]);
-				BLAGUE_DU_JOUR.blague = JSONVar::stringify(responseObject["joke"]);
-				BLAGUE_DU_JOUR.answer = JSONVar::stringify(responseObject["answer"]);
+			for (int count = 0; count < nb_blague; count++) {
+				int httpsResponseCode = https.GET();
 
-				const char * fcontent = payload.c_str();
-				FSData::writeFile(LittleFS, fname, fcontent);
+				if (200 <= httpsResponseCode && httpsResponseCode < 300) {
+					String payload = https.getString();
+					JSONVar responseObject = JSON.parse(payload);
+					BLAGUE_DU_JOUR.type = JSONVar::stringify(responseObject["type"]);
+					BLAGUE_DU_JOUR.blague = JSONVar::stringify(responseObject["joke"]);
+					BLAGUE_DU_JOUR.answer = JSONVar::stringify(responseObject["answer"]);
+
+					String file_name = String(JOKES_FOLDER) + "/" + String(count) + "_blaguedujour.txt";
+					const char * fname = file_name.c_str();
+					const char * fcontent = payload.c_str();
+					FSData::writeFile(LittleFS, fname, fcontent);
+				}
 			}
 			https.end();
 			WiFi.mode(WIFI_OFF);
 			btStop();
 		} else {
+			String file_name = String(JOKES_FOLDER) + "/" + String(esp_random() % 10) + "_blaguedujour.txt";
+			const char * fname = file_name.c_str();
 			file_system.readFile(LittleFS, fname);
 			JSONVar responseObject = JSON.parse(file_system.content);
 			BLAGUE_DU_JOUR.type = JSONVar::stringify(responseObject["type"]);
@@ -258,7 +264,7 @@ void Watchy7SEG::getBlagueDuJour() {
 
 void Watchy7SEG::showJoke() {
 	GET_DATA = true;
-	getBlagueDuJour();
+	getBlagueDuJour(1);
 
 	display.setFullWindow();
 	display.fillScreen(GxEPD_BLACK);

@@ -9,6 +9,7 @@
 #define FORMAT_LITTLEFS_IF_FAILED true
 #define DATA_FOLDER "/data"
 #define STEPS_FOLDER "/data/steps"
+#define JOKES_FOLDER "/data/jokes"
 
 class FSData {
     public:
