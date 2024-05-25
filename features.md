@@ -2,7 +2,7 @@
 
 By default, all the basics features from the Watchy are available :
 
-- __Active Feature__
+- __Active Features__
     - About Watchy
     - Vibrate Motor
     - Show Accelerometer
@@ -10,7 +10,7 @@ By default, all the basics features from the Watchy are available :
     - Setup WiFi
     - Update Firmware
     - Sync NTP
-- __Passive Feature__
+- __Passive Features__
     - Wifi
     - Bluetooth
     - Steps
@@ -39,7 +39,7 @@ A colleague of mine really like joke and really often come to me to ask one of m
 
 __Passive feature__
 
-Everyday at 00h00min, download 10 jokes from the `BLAGUE_URL` var API and register them has files (if network is available).
+Everyday at `00h00min`, download 10 jokes from the `BLAGUE_URL` var API and register them has files (if network is available).
 
 __Active feature__
 
@@ -62,7 +62,7 @@ Make the Watchy a real smartchwatch by doing something _useful_ of the data gene
 
 __Passive feature__
 
-Every hour at xxh59min, send data of the watch from the last hour to the `API_URL` var API from certains rules :
+Every hour at `xxh59min`, send data of the watch from the last hour to the `API_URL` var API from certains rules :
 
 - if network isn't available, register the data in files
 - if network is available send the data from the last hour
