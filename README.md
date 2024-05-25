@@ -8,7 +8,7 @@ It's this a work in progress and be considere as experimental !
 
 ## How to
 
-### Set seetings
+### Set settings
 
 First you need to edit the [parameters file](parameters.h.example) with your informations and rename it to `parameters.h`.
 

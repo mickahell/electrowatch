@@ -22,6 +22,12 @@ class Watchy7SEG : public Watchy{
     using Watchy::Watchy;
     public:
         bool connectWiFi();
+        void menu();
+        void showMenu(byte menuIndex, bool partialRefresh);
+		void menuButton();
+		void backButton();
+		void upButton();
+		void downButton();
         void handleButtonPress();
         void drawWatchFace();
 

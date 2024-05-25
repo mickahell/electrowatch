@@ -22,6 +22,7 @@
 //NTP Settings
 #define NTP_SERVER "pool.ntp.org"
 #define GMT_OFFSET_SEC 3600 * 2 //New York is UTC -5 EST, -4 EDT, will be overwritten by weather data
+#define VIBRATE_0_CLOCK true
 
 // Face params
 #define DARKMODE true

@@ -263,18 +263,18 @@ void Watchy7SEG::getBlagueDuJour(int nb_blague) {
 }
 
 void Watchy7SEG::showJoke() {
-	GET_DATA = true;
-	getBlagueDuJour(1);
-
 	display.setFullWindow();
 	display.fillScreen(GxEPD_BLACK);
 	display.setFont(&FreeMonoBold9pt7b);
+
+	GET_DATA = true;
+	getBlagueDuJour(1);
+
 	display.setTextColor(GxEPD_WHITE);
 	display.setCursor(30, 20);
 	display.println("Joke : " + BLAGUE_DU_JOUR.type);
 	display.println(BLAGUE_DU_JOUR.blague);
 	display.println(BLAGUE_DU_JOUR.answer);
-	display.print("hahahahah");
 	display.display(false); // full refresh
 
 	guiState = FAST_OPT_STATE;
@@ -302,156 +302,173 @@ bool Watchy7SEG::connectWiFi() {
 	return WIFI_CONFIGURED;
 }
 
-void Watchy7SEG::handleButtonPress() {
-  uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
-  // Menu Button
-  if (wakeupBit & MENU_BTN_MASK) {
-	if (guiState ==
-		WATCHFACE_STATE) { // enter menu state if coming from watch face
-	  showMenu(menuIndex, false);
-	} else if (guiState ==
-			   MAIN_MENU_STATE) { // if already in menu, then select menu item
-	  switch (menuIndex) {
-	  case 0:
-		showAbout();
-		break;
-	  case 1:
-		showBuzz();
-		break;
-	  case 2:
-		showAccelerometer();
-		break;
-	  case 3:
-		setTime();
-		break;
-	  case 4:
-		setupWifi();
-		break;
-	  case 5:
-		showUpdateFW();
-		break;
-	  case 6:
-		showSyncNTP();
-		break;
-	  default:
-		break;
-	  }
-	} else if (guiState == FW_UPDATE_STATE) {
-	  updateFWBegin();
-	}
-  }
-  // Back Button
-  else if (wakeupBit & BACK_BTN_MASK) {
-	if (guiState == MAIN_MENU_STATE || guiState == FAST_OPT_STATE) { // exit to watch face if already in menu
-	  RTC.read(currentTime);
-	  showWatchFace(false);
-	} else if (guiState == APP_STATE) {
-	  showMenu(menuIndex, false); // exit to menu if already in app
-	} else if (guiState == FW_UPDATE_STATE) {
-	  showMenu(menuIndex, false); // exit to menu if already in app
-	} else if (guiState == WATCHFACE_STATE) {
-	  return;
-	}
-  }
-  // Up Button
-  else if (wakeupBit & UP_BTN_MASK) {
-	if (guiState == MAIN_MENU_STATE) { // increment menu index
-	  menuIndex--;
-	  if (menuIndex < 0) {
-		menuIndex = MENU_LENGTH - 1;
-	  }
-	  showMenu(menuIndex, true);
-	} else if (guiState == WATCHFACE_STATE) {
-	  showJoke();
-	}
-  }
-  // Down Button
-  else if (wakeupBit & DOWN_BTN_MASK) {
-	if (guiState == MAIN_MENU_STATE) { // decrement menu index
-	  menuIndex++;
-	  if (menuIndex > MENU_LENGTH - 1) {
-		menuIndex = 0;
-	  }
-	  showMenu(menuIndex, true);
-	} else if (guiState == WATCHFACE_STATE) {
-	  return;
-	}
-  }
-
-  /***************** fast menu *****************/
-  bool timeout     = false;
-  long lastTimeout = millis();
-  pinMode(MENU_BTN_PIN, INPUT);
-  pinMode(BACK_BTN_PIN, INPUT);
-  pinMode(UP_BTN_PIN, INPUT);
-  pinMode(DOWN_BTN_PIN, INPUT);
-  while (!timeout) {
-	if (millis() - lastTimeout > 5000) {
-	  timeout = true;
-	} else {
-	  if (digitalRead(MENU_BTN_PIN) == 1) {
-		lastTimeout = millis();
-		if (guiState ==
-			MAIN_MENU_STATE) { // if already in menu, then select menu item
-		  switch (menuIndex) {
-		  case 0:
+void Watchy7SEG::menu() {
+	switch (menuIndex) {
+		case 0:
 			showAbout();
 			break;
-		  case 1:
+		case 1:
 			showBuzz();
 			break;
-		  case 2:
+		case 2:
 			showAccelerometer();
 			break;
-		  case 3:
+		case 3:
 			setTime();
 			break;
-		  case 4:
+		case 4:
 			setupWifi();
 			break;
-		  case 5:
+		case 5:
 			showUpdateFW();
 			break;
-		  case 6:
+		case 6:
 			showSyncNTP();
 			break;
-		  default:
+		default:
 			break;
-		  }
-		} else if (guiState == FW_UPDATE_STATE) {
-		  updateFWBegin();
 		}
-	  } else if (digitalRead(BACK_BTN_PIN) == 1) {
-		lastTimeout = millis();
-		if (guiState ==
-			MAIN_MENU_STATE || guiState == FAST_OPT_STATE) { // exit to watch face if already in menu
-		  RTC.read(currentTime);
-		  showWatchFace(false);
-		  break; // leave loop
-		} else if (guiState == APP_STATE) {
-		  showMenu(menuIndex, false); // exit to menu if already in app
-		} else if (guiState == FW_UPDATE_STATE) {
-		  showMenu(menuIndex, false); // exit to menu if already in app
+}
+
+void Watchy7SEG::showMenu(byte menuIndex, bool partialRefresh) {
+	display.setFullWindow();
+	display.fillScreen(GxEPD_BLACK);
+	display.setFont(&FreeMonoBold9pt7b);
+
+	int16_t x1, y1;
+	uint16_t w, h;
+	int16_t yPos;
+
+	const char *menuItems[] = {
+		"About Watchy", "Vibrate Motor", "Show Accelerometer",
+		"Set Time",     "Setup WiFi",    "Update Firmware",
+		"Sync NTP"};
+	for (int i = 0; i < MENU_LENGTH; i++) {
+		yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
+		display.setCursor(0, yPos);
+		if (i == menuIndex) {
+			display.getTextBounds(menuItems[i], 0, yPos, &x1, &y1, &w, &h);
+			display.fillRect(x1 - 1, y1 - 10, 200, h + 15, GxEPD_WHITE);
+			display.setTextColor(GxEPD_BLACK);
+			display.println(menuItems[i]);
+		} else {
+			display.setTextColor(GxEPD_WHITE);
+			display.println(menuItems[i]);
 		}
-	  } else if (digitalRead(UP_BTN_PIN) == 1) {
-		lastTimeout = millis();
-		if (guiState == MAIN_MENU_STATE) { // increment menu index
-		  menuIndex--;
-		  if (menuIndex < 0) {
-			menuIndex = MENU_LENGTH - 1;
-		  }
-		  showFastMenu(menuIndex);
-		}
-	  } else if (digitalRead(DOWN_BTN_PIN) == 1) {
-		lastTimeout = millis();
-		if (guiState == MAIN_MENU_STATE) { // decrement menu index
-		  menuIndex++;
-		  if (menuIndex > MENU_LENGTH - 1) {
-			menuIndex = 0;
-		  }
-		  showFastMenu(menuIndex);
-		}
-	  }
 	}
-  }
+
+	display.display(partialRefresh);
+
+	guiState = MAIN_MENU_STATE;
+}
+
+void Watchy7SEG::menuButton() {
+	if (guiState == WATCHFACE_STATE) { // enter menu state if coming from watch face
+		showMenu(menuIndex, false);
+	} else if (guiState == MAIN_MENU_STATE) { // if already in menu, then select menu item
+		menu();
+	} else if (guiState == FW_UPDATE_STATE) {
+		updateFWBegin();
+	}
+}
+
+void Watchy7SEG::backButton() {
+	if (guiState == MAIN_MENU_STATE || guiState == FAST_OPT_STATE) { // exit to watch face if already in menu or in fast menu
+		RTC.read(currentTime);
+		showWatchFace(false);
+	} else if (guiState == APP_STATE) {
+		showMenu(menuIndex, false); // exit to menu if already in app
+	} else if (guiState == FW_UPDATE_STATE) {
+		showMenu(menuIndex, false); // exit to menu if already in app
+	} else if (guiState == WATCHFACE_STATE) {
+		return;
+	}
+}
+
+void Watchy7SEG::upButton() {
+	if (guiState == MAIN_MENU_STATE) { // increment menu index
+		menuIndex--;
+		if (menuIndex < 0) {
+			menuIndex = MENU_LENGTH - 1;
+		}
+		showMenu(menuIndex, true);
+	} else if (guiState == WATCHFACE_STATE) {
+		showJoke();
+	}
+}
+
+void Watchy7SEG::downButton() {
+	if (guiState == MAIN_MENU_STATE) { // decrement menu index
+		menuIndex++;
+		if (menuIndex > MENU_LENGTH - 1) {
+			menuIndex = 0;
+		}
+		showMenu(menuIndex, true);
+	} else if (guiState == WATCHFACE_STATE) {
+		return;
+	}
+}
+
+void Watchy7SEG::handleButtonPress() {
+	uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
+
+	// Menu Button
+	if (wakeupBit & MENU_BTN_MASK) {
+		menuButton();
+	}
+	// Back Button
+	else if (wakeupBit & BACK_BTN_MASK) {
+		backButton();
+		if (guiState == WATCHFACE_STATE) {
+			return;
+		}
+	}
+	// Up Button
+	else if (wakeupBit & UP_BTN_MASK) {
+		upButton();
+		if (guiState == WATCHFACE_STATE) {
+			return;
+		}
+	}
+	// Down Button
+	else if (wakeupBit & DOWN_BTN_MASK) {
+		downButton();
+		if (guiState == WATCHFACE_STATE) {
+			return;
+		}
+	}
+
+	/***************** fast menu *****************/
+	bool timeout     = false;
+	long lastTimeout = millis();
+	pinMode(MENU_BTN_PIN, INPUT);
+	pinMode(BACK_BTN_PIN, INPUT);
+	pinMode(UP_BTN_PIN, INPUT);
+	pinMode(DOWN_BTN_PIN, INPUT);
+	while (!timeout) {
+		if (millis() - lastTimeout > 5000) {
+			timeout = true;
+		} else {
+			// Menu Button
+			if (digitalRead(MENU_BTN_PIN) == 1) {
+				lastTimeout = millis();
+				menuButton();
+			// Back Button
+			} else if (digitalRead(BACK_BTN_PIN) == 1) {
+				lastTimeout = millis();
+				backButton();
+				if (guiState == MAIN_MENU_STATE || guiState == FAST_OPT_STATE) { // exit to watch face if already in menu
+					break; // leave loop
+				}
+			// Up Button
+			} else if (digitalRead(UP_BTN_PIN) == 1) {
+				lastTimeout = millis();
+				upButton();
+			// Down Button
+			} else if (digitalRead(DOWN_BTN_PIN) == 1) {
+				lastTimeout = millis();
+				downButton();
+			}
+		}
+	}
 }
