@@ -4,7 +4,11 @@
 
 As I need to edit the main lib to do what I want/need to do. I had to fork the main repo to create my own version of the Watchy.
 
+The actual face is the `Watchy7SEG` from the main repo.
+
 It's this a work in progress and be considere as experimental !
+
+All the features details are available in [features file](features.md).
 
 ## How to
 
