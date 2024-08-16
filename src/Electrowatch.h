@@ -27,7 +27,7 @@ class Watchy7SEG : public Watchy{
         void menuButton();
         void backButton();
         void upButton();
-		    void downButton();
+        void downButton();
         void handleButtonPress();
         void drawWatchFace();
 
