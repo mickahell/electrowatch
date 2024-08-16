@@ -33,6 +33,28 @@ To activate the darkmode just set the var `DARKMODE` to true.
 #define DARKMODE true
 ```
 
+## WiFi connection
+
+Set the WiFi setting as code directly in the parameters.
+Add a 2nd coneection as code.
+
+__Passive feature__
+
+Having the main WiFi settings as code, in order to reconnect-it automatically in case of reuploading sofware.
+
+__Active feature__
+
+In the menu, I added a 2ndary WiFi connection as code, in order to be able to setup an other WiFi point without using the web interface.
+
+### Parameters
+
+```cpp
+#define WIFI_SSID_DEF "Pastabox-test"
+#define WIFI_PASS_DEF "test"
+#define WIFI_SSID_2ND "Volophone-test"
+#define WIFI_PASS_2ND "test"
+```
+
 ## Blagues du jour
 
 A colleague of mine really like joke and really often come to me to ask one of my baddest joke. So I thougt implementing a joke generator or a joke downloader from the Watchy would be very helpful.
