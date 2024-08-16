@@ -1,4 +1,4 @@
-# Watchy - WIP
+# Watchy v2 - WIP
 
 [![cpp-linter](https://github.com/cpp-linter/cpp-linter-action/actions/workflows/cpp-linter.yml/badge.svg)](https://github.com/mickahell/Watchy/actions/workflows/lint.yml)
 
