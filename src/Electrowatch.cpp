@@ -11,6 +11,9 @@ RTC_DATA_ATTR int PSTEPS = 0;
 RTC_DATA_ATTR bool GET_DATA = true;
 RTC_DATA_ATTR struct blagueData BLAGUE_DU_JOUR;
 
+String WIFI_SSID = WIFI_SSID_DEF;
+String WIFI_PASS = WIFI_PASS_DEF;
+
 void Watchy7SEG::drawWatchFace() {
 	//Serial.begin(115200);
 	display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
@@ -280,6 +283,31 @@ void Watchy7SEG::showJoke() {
 	guiState = FAST_OPT_STATE;
 }
 
+void Watchy7SEG::setupSecondaryWifi(int guiSt = FAST_OPT_STATE) {
+	String WIFI_SSID = WIFI_SSID_2ND;
+	String WIFI_PASS = WIFI_PASS_2ND;
+
+	display.setFullWindow();
+	display.fillScreen(GxEPD_BLACK);
+	display.setFont(&FreeMonoBold9pt7b);
+
+	display.setTextColor(GxEPD_WHITE);
+	display.setCursor(30, 80);
+	display.println("Connecting : " + WIFI_SSID);
+	
+	if ( connectWiFi() ) {
+		display.println("Connexion Success !");
+	}
+	else {
+		display.println("Connexion Failed !");
+		String WIFI_SSID = WIFI_SSID_DEF;
+		String WIFI_PASS = WIFI_PASS_DEF;
+	}
+	display.display(false); // full refresh
+
+	guiState = guiSt;
+}
+
 /***********************/
 //
 // Override WatchyLib
@@ -320,7 +348,7 @@ void Watchy7SEG::menu() {
 			setupWifi();
 			break;
 		case 5:
-			showUpdateFW();
+			setupSecondaryWifi(APP_STATE);
 			break;
 		case 6:
 			showSyncNTP();
@@ -341,7 +369,7 @@ void Watchy7SEG::showMenu(byte menuIndex, bool partialRefresh) {
 
 	const char *menuItems[] = {
 		"About Watchy", "Vibrate Motor", "Show Accelerometer",
-		"Set Time",     "Setup WiFi",    "Update Firmware",
+		"Set Time",     "Setup WiFi",    "Setup 2nd Wifi",
 		"Sync NTP"};
 	for (int i = 0; i < MENU_LENGTH; i++) {
 		yPos = MENU_HEIGHT + (MENU_HEIGHT * i);

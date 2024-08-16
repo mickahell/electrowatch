@@ -28,8 +28,11 @@
 #define DARKMODE true
 
 // WIFI Settings
-#define WIFI_SSID "Pastabox-test"
-#define WIFI_PASS "test"
+#define WIFI_SSID_DEF "Pastabox-test"
+#define WIFI_PASS_DEF "test"
+// 2ndary connection point
+#define WIFI_SSID_2ND "Volophone-test"
+#define WIFI_PASS_2ND "test"
 
 // Blague du jour
 #define BLAGUE_TYPE "dev"
