@@ -1,4 +1,4 @@
-# Watchy - WIP
+# Watchy v2 - WIP
 
 [![cpp-linter](https://github.com/cpp-linter/cpp-linter-action/actions/workflows/cpp-linter.yml/badge.svg)](https://github.com/mickahell/Watchy/actions/workflows/lint.yml)
 
@@ -34,8 +34,8 @@ You may need to replace the `--port` with your own.
 
 ```bash
 arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-arduino-cli core install esp32:esp32
-arduino-cli lib install Watchy
+arduino-cli core install esp32:esp32@2.0.17
+arduino-cli lib install Watchy@1.4.10
 ```
 
 #### Compile

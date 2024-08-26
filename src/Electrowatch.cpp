@@ -11,6 +11,10 @@ RTC_DATA_ATTR int PSTEPS = 0;
 RTC_DATA_ATTR bool GET_DATA = true;
 RTC_DATA_ATTR struct blagueData BLAGUE_DU_JOUR;
 
+RTC_DATA_ATTR String WIFI_SSID = WIFI_SSID_DEF;	// String can't be store in RTC
+RTC_DATA_ATTR String WIFI_PASS = WIFI_PASS_DEF;	// but at least that's doesn't const the var
+RTC_DATA_ATTR bool WIFI_2ND = false;
+
 void Watchy7SEG::drawWatchFace() {
 	//Serial.begin(115200);
 	display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
@@ -20,6 +24,11 @@ void Watchy7SEG::drawWatchFace() {
 	drawSteps();
 	drawWeather();
 	drawBattery();
+
+	if (!WIFI_CONFIGURED) {
+		WIFI_SSID = WIFI_SSID_DEF;
+		WIFI_PASS = WIFI_PASS_DEF;
+	}
 	display.drawBitmap(120, 77, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 	if(BLE_CONFIGURED) {
 		display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
@@ -280,6 +289,31 @@ void Watchy7SEG::showJoke() {
 	guiState = FAST_OPT_STATE;
 }
 
+void Watchy7SEG::setupSecondaryWifi() {
+	WIFI_2ND = true;
+
+	display.setFullWindow();
+	display.fillScreen(GxEPD_BLACK);
+	display.setFont(&FreeMonoBold9pt7b);
+
+	display.setTextColor(GxEPD_WHITE);
+	display.setCursor(30, 80);
+	display.println("Connecting : " + String(WIFI_SSID_2ND));
+	
+	if ( connectWiFi() ) {
+		display.println("Connexion Success !");
+	}
+	else {
+		display.println("Connexion Failed !");
+		WIFI_2ND = false;
+		WIFI_SSID = WIFI_SSID_DEF;
+		WIFI_PASS = WIFI_PASS_DEF;
+	}
+	display.display(true); // full refresh
+	delay(3000);
+	showMenu(menuIndex, false);
+}
+
 /***********************/
 //
 // Override WatchyLib
@@ -287,6 +321,10 @@ void Watchy7SEG::showJoke() {
 /***********************/
 
 bool Watchy7SEG::connectWiFi() {
+	if (WIFI_2ND) {
+		WIFI_SSID = WIFI_SSID_2ND;
+		WIFI_PASS = WIFI_PASS_2ND;
+	}
 	if (WL_CONNECT_FAILED == WiFi.begin(WIFI_SSID, WIFI_PASS)) {
 		WIFI_CONFIGURED = false;
 	} else {
@@ -294,6 +332,7 @@ bool Watchy7SEG::connectWiFi() {
 			WIFI_CONFIGURED = true;
 		} else { // connection failed, time out
 			WIFI_CONFIGURED = false;
+			WIFI_2ND = false;
 			// turn off radios
 			WiFi.mode(WIFI_OFF);
 			btStop();
@@ -320,7 +359,7 @@ void Watchy7SEG::menu() {
 			setupWifi();
 			break;
 		case 5:
-			showUpdateFW();
+			setupSecondaryWifi();
 			break;
 		case 6:
 			showSyncNTP();
@@ -341,7 +380,7 @@ void Watchy7SEG::showMenu(byte menuIndex, bool partialRefresh) {
 
 	const char *menuItems[] = {
 		"About Watchy", "Vibrate Motor", "Show Accelerometer",
-		"Set Time",     "Setup WiFi",    "Update Firmware",
+		"Set Time",     "Setup WiFi",    "Setup 2nd Wifi",
 		"Sync NTP"};
 	for (int i = 0; i < MENU_LENGTH; i++) {
 		yPos = MENU_HEIGHT + (MENU_HEIGHT * i);

@@ -24,10 +24,10 @@ class Watchy7SEG : public Watchy{
         bool connectWiFi();
         void menu();
         void showMenu(byte menuIndex, bool partialRefresh);
-		void menuButton();
-		void backButton();
-		void upButton();
-		void downButton();
+        void menuButton();
+        void backButton();
+        void upButton();
+        void downButton();
         void handleButtonPress();
         void drawWatchFace();
 
@@ -40,10 +40,14 @@ class Watchy7SEG : public Watchy{
         void syncAPI();
         void getBlagueDuJour(int nb_blague);
         void showJoke();
+        void setupSecondaryWifi();
 };
 
 extern RTC_DATA_ATTR int PSTEPS;
 extern RTC_DATA_ATTR bool GET_DATA;
 extern RTC_DATA_ATTR blagueData BLAGUE_DU_JOUR;
+extern RTC_DATA_ATTR String WIFI_SSID;
+extern RTC_DATA_ATTR String WIFI_PASS;
+extern RTC_DATA_ATTR bool WIFI_2ND;
 
 #endif
