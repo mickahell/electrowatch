@@ -290,8 +290,6 @@ void Watchy7SEG::showJoke() {
 }
 
 void Watchy7SEG::setupSecondaryWifi() {
-	//WIFI_SSID = WIFI_SSID_2ND;
-	//WIFI_PASS = WIFI_PASS_2ND;
 	WIFI_2ND = true;
 
 	display.setFullWindow();
