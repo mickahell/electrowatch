@@ -11,8 +11,9 @@ RTC_DATA_ATTR int PSTEPS = 0;
 RTC_DATA_ATTR bool GET_DATA = true;
 RTC_DATA_ATTR struct blagueData BLAGUE_DU_JOUR;
 
-String WIFI_SSID = WIFI_SSID_DEF;
-String WIFI_PASS = WIFI_PASS_DEF;
+RTC_DATA_ATTR String WIFI_SSID = WIFI_SSID_DEF;	// String can't be store in RTC
+RTC_DATA_ATTR String WIFI_PASS = WIFI_PASS_DEF;	// but at least that's doesn't const the var
+RTC_DATA_ATTR bool WIFI_2ND = false;
 
 void Watchy7SEG::drawWatchFace() {
 	//Serial.begin(115200);
@@ -23,6 +24,11 @@ void Watchy7SEG::drawWatchFace() {
 	drawSteps();
 	drawWeather();
 	drawBattery();
+
+	if (!WIFI_CONFIGURED) {
+		WIFI_SSID = WIFI_SSID_DEF;
+		WIFI_PASS = WIFI_PASS_DEF;
+	}
 	display.drawBitmap(120, 77, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 	if(BLE_CONFIGURED) {
 		display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
@@ -283,9 +289,10 @@ void Watchy7SEG::showJoke() {
 	guiState = FAST_OPT_STATE;
 }
 
-void Watchy7SEG::setupSecondaryWifi(int guiSt = FAST_OPT_STATE) {
-	String WIFI_SSID = WIFI_SSID_2ND;
-	String WIFI_PASS = WIFI_PASS_2ND;
+void Watchy7SEG::setupSecondaryWifi() {
+	WIFI_SSID = WIFI_SSID_2ND;
+	WIFI_PASS = WIFI_PASS_2ND;
+	WIFI_2ND = true;
 
 	display.setFullWindow();
 	display.fillScreen(GxEPD_BLACK);
@@ -300,12 +307,13 @@ void Watchy7SEG::setupSecondaryWifi(int guiSt = FAST_OPT_STATE) {
 	}
 	else {
 		display.println("Connexion Failed !");
-		String WIFI_SSID = WIFI_SSID_DEF;
-		String WIFI_PASS = WIFI_PASS_DEF;
+		WIFI_2ND = false;
+		WIFI_SSID = WIFI_SSID_DEF;
+		WIFI_PASS = WIFI_PASS_DEF;
 	}
-	display.display(false); // full refresh
-
-	guiState = guiSt;
+	display.display(true); // full refresh
+	delay(3000);
+	showMenu(menuIndex, false);
 }
 
 /***********************/
@@ -315,6 +323,10 @@ void Watchy7SEG::setupSecondaryWifi(int guiSt = FAST_OPT_STATE) {
 /***********************/
 
 bool Watchy7SEG::connectWiFi() {
+	if (WIFI_2ND) {
+		WIFI_SSID = WIFI_SSID_2ND;
+		WIFI_PASS = WIFI_PASS_2ND;
+	}
 	if (WL_CONNECT_FAILED == WiFi.begin(WIFI_SSID, WIFI_PASS)) {
 		WIFI_CONFIGURED = false;
 	} else {
@@ -322,6 +334,7 @@ bool Watchy7SEG::connectWiFi() {
 			WIFI_CONFIGURED = true;
 		} else { // connection failed, time out
 			WIFI_CONFIGURED = false;
+			WIFI_2ND = false;
 			// turn off radios
 			WiFi.mode(WIFI_OFF);
 			btStop();
@@ -348,7 +361,7 @@ void Watchy7SEG::menu() {
 			setupWifi();
 			break;
 		case 5:
-			setupSecondaryWifi(APP_STATE);
+			setupSecondaryWifi();
 			break;
 		case 6:
 			showSyncNTP();
