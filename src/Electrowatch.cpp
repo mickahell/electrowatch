@@ -290,8 +290,8 @@ void Watchy7SEG::showJoke() {
 }
 
 void Watchy7SEG::setupSecondaryWifi() {
-	WIFI_SSID = WIFI_SSID_2ND;
-	WIFI_PASS = WIFI_PASS_2ND;
+	//WIFI_SSID = WIFI_SSID_2ND;
+	//WIFI_PASS = WIFI_PASS_2ND;
 	WIFI_2ND = true;
 
 	display.setFullWindow();
@@ -300,7 +300,7 @@ void Watchy7SEG::setupSecondaryWifi() {
 
 	display.setTextColor(GxEPD_WHITE);
 	display.setCursor(30, 80);
-	display.println("Connecting : " + WIFI_SSID);
+	display.println("Connecting : " + String(WIFI_SSID_2ND));
 	
 	if ( connectWiFi() ) {
 		display.println("Connexion Success !");
