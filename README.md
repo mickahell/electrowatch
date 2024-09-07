@@ -35,7 +35,7 @@ You may need to replace the `--port` with your own.
 ```bash
 arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 arduino-cli core install esp32:esp32@2.0.17
-arduino-cli lib install Watchy@1.4.10
+arduino-cli lib install Watchy@1.4.14
 ```
 
 #### Compile
