@@ -28,6 +28,7 @@
 #define DARKMODE true
 
 // WIFI Settings
+// Default connection point
 #define WIFI_SSID_DEF "Pastabox-test"
 #define WIFI_PASS_DEF "test"
 // 2ndary connection point
