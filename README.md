@@ -24,8 +24,14 @@ In order to build and upload the Watchy from cmd line :
 
 ```bash
 export SKETCH="electrowatch.ino"
+
+# v2
 export FQBN="esp32:esp32:watchy:Revision=v20,PartitionScheme=huge_app,UploadSpeed=921600,DebugLevel=none"
 export PORT="/dev/cu.wchusbserial56230332171"
+
+# v3
+export FQBN="esp32:esp32:esp32s3:FlashSize=8M,PartitionScheme=default_8MB,UploadSpeed=921600,DebugLevel=none,EraseFlash=none"
+export PORT="/dev/cu.usbmodem14101"
 ```
 
 You may need to replace the `--port` with your own.
@@ -63,3 +69,11 @@ screen ${PORT} 115200
 ```
 
 to exit `ctrl a + k`
+
+### Reset
+
+Install [esptool.py](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html)
+
+```bash
+esptool.py --port ${PORT} erase_flash
+```
