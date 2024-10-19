@@ -438,7 +438,7 @@ void Watchy7SEG::upButton() {
 		}
 		showMenu(menuIndex, true);
 	} else if (guiState == WATCHFACE_STATE) {
-		showJoke();
+		return;
 	}
 }
 
@@ -450,7 +450,7 @@ void Watchy7SEG::downButton() {
 		}
 		showMenu(menuIndex, true);
 	} else if (guiState == WATCHFACE_STATE) {
-		return;
+		showJoke();
 	}
 }
 
@@ -460,6 +460,7 @@ void Watchy7SEG::handleButtonPress() {
 	// Menu Button
 	if (wakeupBit & MENU_BTN_MASK) {
 		menuButton();
+		return;
 	}
 	// Back Button
 	else if (wakeupBit & BACK_BTN_MASK) {
