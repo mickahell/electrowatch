@@ -69,3 +69,11 @@ screen ${PORT} 115200
 ```
 
 to exit `ctrl a + k`
+
+### Reset
+
+Install [esptool.py](https://docs.espressif.com/projects/esptool/en/latest/esp32/installation.html)
+
+```bash
+esptool.py --port ${PORT} erase_flash
+```
