@@ -1,5 +1,11 @@
 #include "Electrowatch.h"
 
+#ifdef ARDUINO_ESP32S3_DEV
+  #define ACTIVE_LOW_OVER 0
+#else
+  #define ACTIVE_LOW_OVER 1
+#endif
+
 const uint8_t BATTERY_SEGMENT_WIDTH = 7;
 const uint8_t BATTERY_SEGMENT_HEIGHT = 11;
 const uint8_t BATTERY_SEGMENT_SPACING = 9;
@@ -438,7 +444,7 @@ void Watchy7SEG::upButton() {
 		}
 		showMenu(menuIndex, true);
 	} else if (guiState == WATCHFACE_STATE) {
-		showJoke();
+		return;
 	}
 }
 
@@ -450,7 +456,7 @@ void Watchy7SEG::downButton() {
 		}
 		showMenu(menuIndex, true);
 	} else if (guiState == WATCHFACE_STATE) {
-		return;
+		showJoke();
 	}
 }
 
@@ -495,22 +501,22 @@ void Watchy7SEG::handleButtonPress() {
 			timeout = true;
 		} else {
 			// Menu Button
-			if (digitalRead(MENU_BTN_PIN) == 1) {
+			if (digitalRead(MENU_BTN_PIN) == ACTIVE_LOW_OVER) {
 				lastTimeout = millis();
 				menuButton();
 			// Back Button
-			} else if (digitalRead(BACK_BTN_PIN) == 1) {
+			} else if (digitalRead(BACK_BTN_PIN) == ACTIVE_LOW_OVER) {
 				lastTimeout = millis();
 				backButton();
 				if (guiState == MAIN_MENU_STATE || guiState == FAST_OPT_STATE) { // exit to watch face if already in menu
 					break; // leave loop
 				}
 			// Up Button
-			} else if (digitalRead(UP_BTN_PIN) == 1) {
+			} else if (digitalRead(UP_BTN_PIN) == ACTIVE_LOW_OVER) {
 				lastTimeout = millis();
 				upButton();
 			// Down Button
-			} else if (digitalRead(DOWN_BTN_PIN) == 1) {
+			} else if (digitalRead(DOWN_BTN_PIN) == ACTIVE_LOW_OVER) {
 				lastTimeout = millis();
 				downButton();
 			}
