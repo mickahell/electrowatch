@@ -25,11 +25,17 @@ void Watchy7SEG::drawWatchFace() {
 	//Serial.begin(115200);
 	display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
 	display.setTextColor(DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-	drawTime();
-	drawDate();
-	drawSteps();
-	drawWeather();
-	drawBattery();
+
+	if (skatingMode) {
+        //updateSkating();
+        //drawSkatingUI();
+    } else {
+		drawTime();
+		drawDate();
+		drawSteps();
+		drawWeather();
+		drawBattery();
+	}
 
 	if (!WIFI_CONFIGURED) {
 		WIFI_SSID = WIFI_SSID_DEF;
@@ -47,8 +53,11 @@ void Watchy7SEG::drawWatchFace() {
     #endif
 
 	setupFS();
-	syncAPI();
-	getBlagueDuJour(10);
+
+	if (!skatingMode) {
+		syncAPI();
+		getBlagueDuJour(10);
+	}
 }
 
 void Watchy7SEG::drawTime() {
@@ -180,6 +189,28 @@ void Watchy7SEG::drawWeather() {
 	
 	display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 }
+
+// void Watchy7SEG::drawSkatingUI() {
+//     SessionData data = session.getData();
+
+//     display.setCursor(0, 20);
+//     display.print("TIME ");
+//     int minutes = data.elapsed / 60;
+// 	int seconds = data.elapsed % 60;
+// 	display.printf("%02d:%02d", minutes, seconds);
+
+//     display.setCursor(0, 60);
+//     display.print("PUSH ");
+//     display.print(data.pushCount);
+
+//     display.setCursor(0, 100);
+//     display.print("DIST ");
+//     display.print(data.distance / 1000.0);
+// 	display.print(" km");
+
+// 	display.setCursor(0, 140);
+// 	display.print(data.running ? "RUN" : "STOP");
+// }
 
 void Watchy7SEG::setupFS() {
 	LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED);
@@ -326,6 +357,17 @@ void Watchy7SEG::setupSecondaryWifi() {
 	showMenu(menuIndex, false);
 }
 
+//void Watchy7SEG::updateSkating() {
+//    static uint32_t lastSteps = 0;
+//
+//    uint32_t steps = sensor.getCounter();
+//
+//    bool pushDetected = (steps > lastSteps);
+//    lastSteps = steps;
+//
+//    session.update(pushDetected);
+//}
+
 /***********************/
 //
 // Override WatchyLib
@@ -359,7 +401,8 @@ void Watchy7SEG::menu() {
 			showAbout();
 			break;
 		case 1:
-			showBuzz();
+			skatingMode = !skatingMode;
+			session.stop();  // reset state
 			break;
 		case 2:
 			showAccelerometer();
@@ -391,7 +434,7 @@ void Watchy7SEG::showMenu(byte menuIndex, bool partialRefresh) {
 	int16_t yPos;
 
 	const char *menuItems[] = {
-		"About Watchy", "Vibrate Motor", "Show Accelerometer",
+		"About Watchy", "Skating", "Show Accelerometer",
 		"Set Time",     "Setup WiFi",    "Setup 2nd Wifi",
 		"Sync NTP"};
 	for (int i = 0; i < MENU_LENGTH; i++) {
@@ -443,6 +486,9 @@ void Watchy7SEG::upButton() {
 			menuIndex = MENU_LENGTH - 1;
 		}
 		showMenu(menuIndex, true);
+	} else if (skatingMode && guiState == WATCHFACE_STATE) {
+        session.start();
+        return;
 	} else if (guiState == WATCHFACE_STATE) {
 		return;
 	}
@@ -455,6 +501,9 @@ void Watchy7SEG::downButton() {
 			menuIndex = 0;
 		}
 		showMenu(menuIndex, true);
+	} else if (skatingMode && guiState == WATCHFACE_STATE) {
+        session.stop();
+        return;
 	} else if (guiState == WATCHFACE_STATE) {
 		showJoke();
 	}
