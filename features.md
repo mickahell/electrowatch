@@ -5,7 +5,6 @@ By default, all the basics features from the Watchy are available :
 - __Active Features__
     - About Watchy
     - Skating app
-    - Show Accelerometer
     - Set Time
     - Setup WiFi
     - Update Firmware
