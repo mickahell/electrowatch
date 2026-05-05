@@ -33,6 +33,7 @@ class Watchy7SEG : public Watchy{
         void downButton();
         void handleButtonPress();
         void drawWatchFace();
+        uint32_t getEpochTime();
 
         void drawTime();
         void drawDate();
@@ -51,7 +52,6 @@ class Watchy7SEG : public Watchy{
     private:
         SessionEngine session;
         PushDetector pushDetector;
-        bool skatingMode = false;
 };
 
 extern RTC_DATA_ATTR int PSTEPS;
@@ -60,5 +60,6 @@ extern RTC_DATA_ATTR blagueData BLAGUE_DU_JOUR;
 extern RTC_DATA_ATTR String WIFI_SSID;
 extern RTC_DATA_ATTR String WIFI_PASS;
 extern RTC_DATA_ATTR bool WIFI_2ND;
+extern RTC_DATA_ATTR bool skatingMode;
 
 #endif

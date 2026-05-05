@@ -1,35 +1,43 @@
 #include <Arduino.h>
 #include "SessionEngine.h"
 
-void SessionEngine::start() {
-    pushCount = 0;
-    distance = 0;
-    startTime = millis();
-    running = true;
+// RTC persistent state
+RTC_DATA_ATTR SessionData sessionState = {
+    0, 0.0f, 0, 0, false
+};
+
+// ------------------ ENGINE ------------------
+
+void SessionEngine::start(uint32_t timeNow) {
+    if (sessionState.running) return;
+
+    sessionState.pushCount = 0;
+    sessionState.distance = 0;
+    sessionState.running = true;
+
+    sessionState.sessionStartTime = timeNow;
 }
 
-void SessionEngine::stop() {
-    running = false;
+void SessionEngine::stop(uint32_t timeNow) {
+    sessionState.running = false;
+    sessionState.elapsed = timeNow - sessionState.sessionStartTime;
 }
 
-void SessionEngine::update(bool pushDetected) {
-    if (!running) return;
+void SessionEngine::update(bool pushDetected, uint32_t timeNow) {
+    if (!sessionState.running) return;
 
     if (pushDetected) {
-        pushCount++;
-        distance = pushCount * 1.5; // meters per push (tune later)
+        sessionState.pushCount++;
+        sessionState.distance = sessionState.pushCount * 1.5;
     }
+    sessionState.elapsed = timeNow - sessionState.sessionStartTime;
 }
 
 SessionData SessionEngine::getData() {
-    SessionData data;
-    data.pushCount = pushCount;
-    data.distance = distance;
-    data.elapsed = running ? (millis() - startTime) / 1000 : 0;
-    data.running = running;
+    SessionData data = sessionState;
     return data;
 }
 
 bool SessionEngine::isRunning() {
-    return running;
+    return sessionState.running;
 }
