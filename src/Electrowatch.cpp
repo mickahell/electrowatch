@@ -20,35 +20,51 @@ RTC_DATA_ATTR struct blagueData BLAGUE_DU_JOUR;
 RTC_DATA_ATTR String WIFI_SSID = WIFI_SSID_DEF;	// String can't be store in RTC
 RTC_DATA_ATTR String WIFI_PASS = WIFI_PASS_DEF;	// but at least that's doesn't const the var
 RTC_DATA_ATTR bool WIFI_2ND = false;
+RTC_DATA_ATTR bool skatingMode = false;
+
+uint32_t Watchy7SEG::getEpochTime() {
+    tmElements_t tm;
+    RTC.read(tm);
+    return makeTime(tm);
+}
 
 void Watchy7SEG::drawWatchFace() {
 	//Serial.begin(115200);
 	display.fillScreen(DARKMODE ? GxEPD_BLACK : GxEPD_WHITE);
 	display.setTextColor(DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-	drawTime();
-	drawDate();
-	drawSteps();
-	drawWeather();
-	drawBattery();
 
 	if (!WIFI_CONFIGURED) {
 		WIFI_SSID = WIFI_SSID_DEF;
 		WIFI_PASS = WIFI_PASS_DEF;
 	}
-	display.drawBitmap(116, 75, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-	if(BLE_CONFIGURED) {
-		display.drawBitmap(100, 73, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+
+	if (skatingMode) {
+        updateSkating();
+        drawSkatingUI();
+    } else {
+		drawTime();
+		drawDate();
+		drawSteps();
+		drawWeather();
+		drawBattery();
+
+		display.drawBitmap(116, 75, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+		if(BLE_CONFIGURED) {
+			display.drawBitmap(100, 73, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+		}
+		#ifdef ARDUINO_ESP32S3_DEV
+			if(USB_PLUGGED_IN){
+				display.drawBitmap(140, 75, charge, 16, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+			}
+		#endif
 	}
 
-	#ifdef ARDUINO_ESP32S3_DEV
-    if(USB_PLUGGED_IN){
-      display.drawBitmap(140, 75, charge, 16, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-    }
-    #endif
-
 	setupFS();
-	syncAPI();
-	getBlagueDuJour(10);
+
+	if (!skatingMode) {
+		syncAPI();
+		getBlagueDuJour(10);
+	}
 }
 
 void Watchy7SEG::drawTime() {
@@ -179,6 +195,49 @@ void Watchy7SEG::drawWeather() {
 	}
 	
 	display.drawBitmap(145, 158, weatherIcon, WEATHER_ICON_WIDTH, WEATHER_ICON_HEIGHT, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+}
+
+void Watchy7SEG::drawSkatingUI() {
+    SessionData data = session.getData();
+
+	display.setFont(&FreeMonoBold9pt7b);
+
+    display.setCursor(0, 20);
+    display.print("TIME ");
+    int minutes = data.elapsed / 60;
+	int seconds = data.elapsed % 60;
+	display.printf("%02d:%02d", minutes, seconds);
+
+    display.setCursor(0, 60);
+    display.print("PUSH ");
+    display.print(data.pushCount);
+
+    display.setCursor(0, 100);
+    display.print("DIST ");
+    display.print(data.distance / 1000.0);
+	display.print(" km");
+
+	display.setCursor(0, 140);
+	display.print(data.running ? "RUN" : "STOP");
+
+	display.setCursor(35, 190);
+	int displayHour;
+	if(HOUR_12_24==12) {
+		displayHour = ((currentTime.Hour+11)%12)+1;
+	} else {
+		displayHour = currentTime.Hour;
+	}
+	if(displayHour < 10) {
+		display.print("0");
+	}
+	display.print(displayHour);
+	display.print(":");
+	if(currentTime.Minute < 10) {
+		display.print("0");
+	}
+	display.println(currentTime.Minute);
+
+	guiState = MAIN_MENU_STATE;
 }
 
 void Watchy7SEG::setupFS() {
@@ -326,6 +385,17 @@ void Watchy7SEG::setupSecondaryWifi() {
 	showMenu(menuIndex, false);
 }
 
+void Watchy7SEG::updateSkating() {
+   static uint32_t lastSteps = 0;
+
+   uint32_t steps = sensor.getCounter();
+
+   bool pushDetected = (steps > lastSteps);
+   lastSteps = steps;
+
+   session.update(pushDetected, getEpochTime());
+}
+
 /***********************/
 //
 // Override WatchyLib
@@ -359,21 +429,24 @@ void Watchy7SEG::menu() {
 			showAbout();
 			break;
 		case 1:
-			showBuzz();
+			skatingMode = !skatingMode;
+			if (skatingMode) {
+				session.start(getEpochTime());
+			} else {
+				session.stop(getEpochTime());
+			}
+			backButton();
 			break;
 		case 2:
-			showAccelerometer();
-			break;
-		case 3:
 			setTime();
 			break;
-		case 4:
+		case 3:
 			setupWifi();
 			break;
-		case 5:
+		case 4:
 			setupSecondaryWifi();
 			break;
-		case 6:
+		case 5:
 			showSyncNTP();
 			break;
 		default:
@@ -391,9 +464,9 @@ void Watchy7SEG::showMenu(byte menuIndex, bool partialRefresh) {
 	int16_t yPos;
 
 	const char *menuItems[] = {
-		"About Watchy", "Vibrate Motor", "Show Accelerometer",
-		"Set Time",     "Setup WiFi",    "Setup 2nd Wifi",
-		"Sync NTP"};
+		"About Watchy", "Skating", "Set Time",
+		"Setup WiFi", "Setup 2nd Wifi", "Sync NTP"
+	};
 	for (int i = 0; i < MENU_LENGTH; i++) {
 		yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
 		display.setCursor(0, yPos);
@@ -418,8 +491,6 @@ void Watchy7SEG::menuButton() {
 		showMenu(menuIndex, false);
 	} else if (guiState == MAIN_MENU_STATE) { // if already in menu, then select menu item
 		menu();
-	} else if (guiState == FW_UPDATE_STATE) {
-		updateFWBegin();
 	}
 }
 
@@ -428,8 +499,6 @@ void Watchy7SEG::backButton() {
 		RTC.read(currentTime);
 		showWatchFace(false);
 	} else if (guiState == APP_STATE) {
-		showMenu(menuIndex, false); // exit to menu if already in app
-	} else if (guiState == FW_UPDATE_STATE) {
 		showMenu(menuIndex, false); // exit to menu if already in app
 	} else if (guiState == WATCHFACE_STATE) {
 		return;
@@ -443,6 +512,9 @@ void Watchy7SEG::upButton() {
 			menuIndex = MENU_LENGTH - 1;
 		}
 		showMenu(menuIndex, true);
+	} else if (skatingMode && guiState == WATCHFACE_STATE) {
+        session.start(getEpochTime());
+        return;
 	} else if (guiState == WATCHFACE_STATE) {
 		return;
 	}
@@ -455,7 +527,10 @@ void Watchy7SEG::downButton() {
 			menuIndex = 0;
 		}
 		showMenu(menuIndex, true);
-	} else if (guiState == WATCHFACE_STATE) {
+	} else if (skatingMode && guiState == WATCHFACE_STATE) {
+        session.stop(getEpochTime());
+        return;
+	} else if (!skatingMode && guiState == WATCHFACE_STATE) {
 		showJoke();
 	}
 }
