@@ -387,7 +387,7 @@ void Watchy7SEG::setupSecondaryWifi() {
 
 void Watchy7SEG::updateSkating() {
 
-    Accel acc;
+    BMA423::Accel acc;
 
     sensor.getAccel(acc);
 
