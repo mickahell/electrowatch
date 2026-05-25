@@ -1,5 +1,4 @@
 #include "Electrowatch.h"
-#include "PushDetector.h"
 
 #ifdef ARDUINO_ESP32S3_DEV
   #define ACTIVE_LOW_OVER 0
