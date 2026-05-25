@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "SessionEngine.h"
+#include "../../parameters.h"
 
 // RTC persistent state
 RTC_DATA_ATTR SessionData sessionState = {
@@ -28,7 +29,7 @@ void SessionEngine::update(bool pushDetected, uint32_t timeNow) {
 
     if (pushDetected) {
         sessionState.pushCount++;
-        sessionState.distance = sessionState.pushCount * 1.5;
+        sessionState.distance = sessionState.pushCount * SKATE_STRIDE_LENGTH;
     }
     sessionState.elapsed = timeNow - sessionState.sessionStartTime;
 }

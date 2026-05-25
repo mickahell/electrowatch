@@ -27,6 +27,11 @@
 // Face params
 #define DARKMODE true
 
+// Skating App Settings
+#define SKATE_STRIDE_LENGTH 1.5     // Distance per push in meters (calibrate per user)
+#define SKATE_PUSH_THRESHOLD 1.5    // Acceleration threshold for push detection
+#define SKATE_DEBOUNCE_MS 400       // Debounce time in milliseconds
+
 // WIFI Settings
 // Default connection point
 #define WIFI_SSID_DEF "Pastabox-test"

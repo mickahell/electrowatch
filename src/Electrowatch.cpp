@@ -237,7 +237,7 @@ void Watchy7SEG::drawSkatingUI() {
 	}
 	display.println(currentTime.Minute);
 
-	guiState = MAIN_MENU_STATE;
+	guiState = WATCHFACE_STATE;
 }
 
 void Watchy7SEG::setupFS() {
