@@ -387,9 +387,11 @@ void Watchy7SEG::setupSecondaryWifi() {
 
 void Watchy7SEG::updateSkating() {
 
-    BMA423::Accel acc;
+    Accel acc;   // <-- NOT BMA423::Accel
 
-    sensor.getAccel(acc);
+    if (!sensor.getAccel(acc)) {
+        return;
+    }
 
     float mag = sqrt(
         (float)acc.x * acc.x +
