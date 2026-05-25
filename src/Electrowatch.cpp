@@ -387,14 +387,14 @@ void Watchy7SEG::setupSecondaryWifi() {
 
 void Watchy7SEG::updateSkating() {
 
-    sensors_event_t event;
-    sensor.getEvent(&event);
+    int16_t x, y, z;
+	sensor.getAccel(x, y, z);
 
-    float mag = sqrt(
-        event.acceleration.x * event.acceleration.x +
-        event.acceleration.y * event.acceleration.y +
-        event.acceleration.z * event.acceleration.z
-    );
+	float mag = sqrt(
+		(float)x * x +
+		(float)y * y +
+		(float)z * z
+	);
 
     bool pushDetected = pushDetector.detect(mag);
 
