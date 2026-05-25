@@ -29,7 +29,7 @@ void SessionEngine::update(bool pushDetected, uint32_t timeNow) {
 
     if (pushDetected) {
         sessionState.pushCount++;
-        sessionState.distance = sessionState.pushCount * SKATE_STRIDE_LENGTH;
+        sessionState.distance = sessionState.pushCount * 1.5;
     }
     sessionState.elapsed = timeNow - sessionState.sessionStartTime;
 }

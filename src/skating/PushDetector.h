@@ -10,6 +10,7 @@ class PushDetector {
 
     private:
         unsigned long lastPushTime = 0;
-        float threshold = 1.5;      // tune this
-        int debounce = 400;         // ms
+        float threshold = 0.15;      // tune this
+        int debounce = 120;         // ms
+        bool wasAbove = false;
 };

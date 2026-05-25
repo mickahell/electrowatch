@@ -1,4 +1,5 @@
 #include "Electrowatch.h"
+#include "PushDetector.h"
 
 #ifdef ARDUINO_ESP32S3_DEV
   #define ACTIVE_LOW_OVER 0
@@ -386,14 +387,19 @@ void Watchy7SEG::setupSecondaryWifi() {
 }
 
 void Watchy7SEG::updateSkating() {
-   static uint32_t lastSteps = 0;
 
-   uint32_t steps = sensor.getCounter();
+    sensors_event_t event;
+    sensor.getEvent(&event);
 
-   bool pushDetected = (steps > lastSteps);
-   lastSteps = steps;
+    float mag = sqrt(
+        event.acceleration.x * event.acceleration.x +
+        event.acceleration.y * event.acceleration.y +
+        event.acceleration.z * event.acceleration.z
+    );
 
-   session.update(pushDetected, getEpochTime());
+    bool pushDetected = pushDetector.detect(mag);
+
+    session.update(pushDetected, getEpochTime());
 }
 
 /***********************/

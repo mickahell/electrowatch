@@ -29,8 +29,8 @@
 
 // Skating App Settings
 #define SKATE_STRIDE_LENGTH 1.5     // Distance per push in meters (calibrate per user)
-#define SKATE_PUSH_THRESHOLD 1.5    // Acceleration threshold for push detection
-#define SKATE_DEBOUNCE_MS 400       // Debounce time in milliseconds
+#define SKATE_PUSH_THRESHOLD 0.10    // Acceleration threshold for push detection
+#define SKATE_DEBOUNCE_MS 200       // Debounce time in milliseconds
 
 // WIFI Settings
 // Default connection point

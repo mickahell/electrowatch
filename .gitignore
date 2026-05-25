@@ -71,3 +71,4 @@ nbproject
 .envrc
 **/parameters.h
 .cpp-linter_cache
+.chatgpt.txt
