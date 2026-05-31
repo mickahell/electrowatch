@@ -20,7 +20,6 @@ RTC_DATA_ATTR struct blagueData BLAGUE_DU_JOUR;
 RTC_DATA_ATTR String WIFI_SSID = WIFI_SSID_DEF;	// String can't be store in RTC
 RTC_DATA_ATTR String WIFI_PASS = WIFI_PASS_DEF;	// but at least that's doesn't const the var
 RTC_DATA_ATTR bool WIFI_2ND = false;
-RTC_DATA_ATTR bool skatingMode = false;
 
 uint32_t Watchy7SEG::getEpochTime() {
     tmElements_t tm;
@@ -38,33 +37,26 @@ void Watchy7SEG::drawWatchFace() {
 		WIFI_PASS = WIFI_PASS_DEF;
 	}
 
-	if (skatingMode) {
-        updateSkating();
-        drawSkatingUI();
-    } else {
-		drawTime();
-		drawDate();
-		drawSteps();
-		drawWeather();
-		drawBattery();
+	drawTime();
+	drawDate();
+	drawSteps();
+	drawWeather();
+	drawBattery();
 
-		display.drawBitmap(116, 75, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-		if(BLE_CONFIGURED) {
-			display.drawBitmap(100, 73, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-		}
-		#ifdef ARDUINO_ESP32S3_DEV
-			if(USB_PLUGGED_IN){
-				display.drawBitmap(140, 75, charge, 16, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-			}
-		#endif
+	display.drawBitmap(116, 75, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+	if(BLE_CONFIGURED) {
+		display.drawBitmap(100, 73, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 	}
+	#ifdef ARDUINO_ESP32S3_DEV
+		if(USB_PLUGGED_IN){
+			display.drawBitmap(140, 75, charge, 16, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
+		}
+	#endif
 
 	setupFS();
 
-	if (!skatingMode) {
-		syncAPI();
-		getBlagueDuJour(10);
-	}
+	syncAPI();
+	getBlagueDuJour(10);
 }
 
 void Watchy7SEG::drawTime() {
@@ -198,46 +190,83 @@ void Watchy7SEG::drawWeather() {
 }
 
 void Watchy7SEG::drawSkatingUI() {
-    SessionData data = session.getData();
-
+	display.setFullWindow();
+	display.fillScreen(GxEPD_BLACK);
 	display.setFont(&FreeMonoBold9pt7b);
+	display.setTextColor(GxEPD_WHITE);
 
-    display.setCursor(0, 20);
-    display.print("TIME ");
-    int minutes = data.elapsed / 60;
-	int seconds = data.elapsed % 60;
-	display.printf("%02d:%02d", minutes, seconds);
+	guiState = APP_STATE;
 
-    display.setCursor(0, 60);
-    display.print("PUSH ");
-    display.print(data.pushCount);
+	long previousMillis = 0;
+  	long interval       = 2000;
+	static uint32_t lastSteps = 0;
+	session.start(getEpochTime());
 
-    display.setCursor(0, 100);
-    display.print("DIST ");
-    display.print(data.distance / 1000.0);
-	display.print(" km");
+	while(1) {
+		unsigned long currentMillis = millis();
 
-	display.setCursor(0, 140);
-	display.print(data.running ? "RUN" : "STOP");
+		if (digitalRead(BACK_BTN_PIN) == ACTIVE_LOW_OVER) { session.stop(getEpochTime()); break; }
 
-	display.setCursor(35, 190);
-	int displayHour;
-	if(HOUR_12_24==12) {
-		displayHour = ((currentTime.Hour+11)%12)+1;
-	} else {
-		displayHour = currentTime.Hour;
+		if (currentMillis - previousMillis > interval) {
+      		previousMillis = currentMillis;
+
+			// Accel acc;   // <-- NOT BMA423::Accel
+			// float mag = sqrt(
+			//     (float)acc.x * acc.x +
+			//     (float)acc.y * acc.y +
+			//     (float)acc.z * acc.z
+			// );
+			// bool pushDetected = pushDetector.detect(mag);
+
+			// Data
+			uint32_t steps = sensor.getCounter();
+			bool pushDetected = (steps > lastSteps);
+			lastSteps = steps;
+			session.update(pushDetected, getEpochTime());
+			SessionData data = session.getData();
+
+			// Display
+			display.fillScreen(GxEPD_BLACK);
+
+			display.setCursor(0, 20);
+			display.print("TIME ");
+			int minutes = data.elapsed / 60;
+			int seconds = data.elapsed % 60;
+			display.printf("%02d:%02d", minutes, seconds);
+
+			display.setCursor(0, 60);
+			display.print("PUSH ");
+			display.print(data.pushCount);
+
+			display.setCursor(0, 100);
+			display.print("DIST ");
+			display.print(data.distance / 1000.0);
+			display.print(" km");
+
+			display.setCursor(0, 140);
+			display.print(data.running ? "RUN" : "STOP");
+
+			display.setCursor(35, 190);
+			int displayHour;
+			if(HOUR_12_24==12) {
+				displayHour = ((currentTime.Hour+11)%12)+1;
+			} else {
+				displayHour = currentTime.Hour;
+			}
+			if(displayHour < 10) {
+				display.print("0");
+			}
+			display.print(displayHour);
+			display.print(":");
+			if(currentTime.Minute < 10) {
+				display.print("0");
+			}
+			display.println(currentTime.Minute);
+
+			display.display(true); // full refresh
+		}
 	}
-	if(displayHour < 10) {
-		display.print("0");
-	}
-	display.print(displayHour);
-	display.print(":");
-	if(currentTime.Minute < 10) {
-		display.print("0");
-	}
-	display.println(currentTime.Minute);
-
-	guiState = WATCHFACE_STATE;
+	showMenu(menuIndex, false);
 }
 
 void Watchy7SEG::setupFS() {
@@ -385,25 +414,6 @@ void Watchy7SEG::setupSecondaryWifi() {
 	showMenu(menuIndex, false);
 }
 
-void Watchy7SEG::updateSkating() {
-
-    Accel acc;   // <-- NOT BMA423::Accel
-
-    if (!sensor.getAccel(acc)) {
-        return;
-    }
-
-    float mag = sqrt(
-        (float)acc.x * acc.x +
-        (float)acc.y * acc.y +
-        (float)acc.z * acc.z
-    );
-
-    bool pushDetected = pushDetector.detect(mag);
-
-    session.update(pushDetected, getEpochTime());
-}
-
 /***********************/
 //
 // Override WatchyLib
@@ -437,13 +447,7 @@ void Watchy7SEG::menu() {
 			showAbout();
 			break;
 		case 1:
-			skatingMode = !skatingMode;
-			if (skatingMode) {
-				session.start(getEpochTime());
-			} else {
-				session.stop(getEpochTime());
-			}
-			backButton();
+			drawSkatingUI();
 			break;
 		case 2:
 			setTime();
@@ -520,9 +524,6 @@ void Watchy7SEG::upButton() {
 			menuIndex = MENU_LENGTH - 1;
 		}
 		showMenu(menuIndex, true);
-	} else if (skatingMode && guiState == WATCHFACE_STATE) {
-        session.start(getEpochTime());
-        return;
 	} else if (guiState == WATCHFACE_STATE) {
 		return;
 	}
@@ -535,10 +536,7 @@ void Watchy7SEG::downButton() {
 			menuIndex = 0;
 		}
 		showMenu(menuIndex, true);
-	} else if (skatingMode && guiState == WATCHFACE_STATE) {
-        session.stop(getEpochTime());
-        return;
-	} else if (!skatingMode && guiState == WATCHFACE_STATE) {
+	} else if (guiState == WATCHFACE_STATE) {
 		showJoke();
 	}
 }
