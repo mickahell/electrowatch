@@ -279,9 +279,7 @@ void Watchy7SEG::setupFS() {
 
 void Watchy7SEG::syncAPI() {
 	int cSteps = sensor.getCounter();
-	if (currentTime.Hour == 0 && currentTime.Minute == 0) {
-		PSTEPS = cSteps;
-	}
+	if (currentTime.Hour == 0 && currentTime.Minute == 0) { PSTEPS = cSteps; }
 	if (currentTime.Minute == 59 && cSteps > PSTEPS) {
 		String day_api = (currentTime.Day < 10) ? ("0" + String(currentTime.Day)) : String(currentTime.Day);
 		String month_api = (currentTime.Month < 10) ? ("0" + String(currentTime.Month)) : String(currentTime.Month);
@@ -293,11 +291,12 @@ void Watchy7SEG::syncAPI() {
 		
 		LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED);
 		FSData file_system;
-		if (connectWiFi()) {
-			// Steps
-			SendData::pushAPIData(json_steps);
+		String file_name = String(STEPS_FOLDER) + "/" + date_api + "_" + hour_api + ".txt";
+		const char * fname = file_name.c_str();
+		const char * json_content = json_steps.c_str();
+		FSData::writeFile(LittleFS, fname, json_content);
 
-			// Sync old data steps
+		if (connectWiFi()) {
 			file_system.listDir(LittleFS, STEPS_FOLDER);
 			for(const String& file : file_system.files) {
 				String file_name = String(STEPS_FOLDER) + "/" + file;
@@ -311,12 +310,8 @@ void Watchy7SEG::syncAPI() {
 			// turn off radios
 			WiFi.mode(WIFI_OFF);
 			btStop();
-		} else { // No WiFi, register into a file
-			String file_name = String(STEPS_FOLDER) + "/" + date_api + "_" + hour_api + ".txt";
-			const char * fname = file_name.c_str();
-			const char * json_content = json_steps.c_str();
-			FSData::writeFile(LittleFS, fname, json_content);
 		}
+
 		LittleFS.end();
 		PSTEPS = cSteps;
 	}
