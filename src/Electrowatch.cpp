@@ -198,14 +198,22 @@ void Watchy7SEG::drawSkatingUI() {
 	guiState = APP_STATE;
 
 	long previousMillis = 0;
+	long previousTimeMillis = 0;
   	long interval       = 2000;
 	static uint32_t lastSteps = 0;
 	session.start(getEpochTime());
+	RTC.read(currentTime);
 
 	while(1) {
 		unsigned long currentMillis = millis();
 
 		if (digitalRead(BACK_BTN_PIN) == ACTIVE_LOW_OVER) { session.stop(getEpochTime()); break; }
+		if (digitalRead(DOWN_BTN_PIN) == ACTIVE_LOW_OVER) { session.pause(getEpochTime()); }
+
+		if (currentMillis - previousTimeMillis > 60000) {
+			previousTimeMillis = currentMillis;
+			RTC.read(currentTime);
+		}
 
 		if (currentMillis - previousMillis > interval) {
       		previousMillis = currentMillis;
@@ -244,23 +252,14 @@ void Watchy7SEG::drawSkatingUI() {
 			display.print(" km");
 
 			display.setCursor(0, 140);
-			display.print(data.running ? "RUN" : "STOP");
+			display.print(data.running ? "RUN" : "PAUSE");
 
 			display.setCursor(35, 190);
-			int displayHour;
-			if(HOUR_12_24==12) {
-				displayHour = ((currentTime.Hour+11)%12)+1;
-			} else {
-				displayHour = currentTime.Hour;
-			}
-			if(displayHour < 10) {
-				display.print("0");
-			}
+			int displayHour = currentTime.Hour;
+			if(displayHour < 10) { display.print("0"); }
 			display.print(displayHour);
 			display.print(":");
-			if(currentTime.Minute < 10) {
-				display.print("0");
-			}
+			if(currentTime.Minute < 10) { display.print("0"); }
 			display.println(currentTime.Minute);
 
 			display.display(true); // full refresh

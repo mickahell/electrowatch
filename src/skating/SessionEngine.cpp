@@ -3,7 +3,7 @@
 
 // RTC persistent state
 RTC_DATA_ATTR SessionData sessionState = {
-    0, 0.0f, 0, 0, false
+    0, 0.0f, 0, 0, 0, false
 };
 
 // ------------------ ENGINE ------------------
@@ -13,14 +13,27 @@ void SessionEngine::start(uint32_t timeNow) {
 
     sessionState.pushCount = 0;
     sessionState.distance = 0;
-    sessionState.running = true;
-
+    sessionState.elapsed = 0;
+    sessionState.pausedElapsed = 0;
     sessionState.sessionStartTime = timeNow;
+    sessionState.running = true;
 }
 
 void SessionEngine::stop(uint32_t timeNow) {
     sessionState.running = false;
     sessionState.elapsed = timeNow - sessionState.sessionStartTime;
+}
+
+void SessionEngine::pause(uint32_t timeNow) {
+    if (!sessionState.running) {
+        // Resume
+        sessionState.sessionStartTime = timeNow;
+        sessionState.running = true;
+    } else {
+        // Pause
+        sessionState.pausedElapsed += timeNow - sessionState.sessionStartTime;
+        sessionState.running = false;
+    }
 }
 
 void SessionEngine::update(bool pushDetected, uint32_t timeNow) {
@@ -30,7 +43,7 @@ void SessionEngine::update(bool pushDetected, uint32_t timeNow) {
         sessionState.pushCount++;
         sessionState.distance = sessionState.pushCount * 3;
     }
-    sessionState.elapsed = timeNow - sessionState.sessionStartTime;
+    sessionState.elapsed = sessionState.pausedElapsed + (timeNow - sessionState.sessionStartTime);
 }
 
 SessionData SessionEngine::getData() {
