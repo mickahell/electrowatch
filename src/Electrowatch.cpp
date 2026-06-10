@@ -199,8 +199,11 @@ void Watchy7SEG::drawSkatingUI() {
 
 	long previousMillis = 0;
 	long previousTimeMillis = 0;
-  	long interval       = 2000;
-	static uint32_t lastSteps = 0;
+  	long interval = 1000;
+
+	Accel acc;   // <-- NOT BMA423::Accel
+	//static uint32_t lastSteps = 0;
+
 	session.start(getEpochTime());
 	RTC.read(currentTime);
 
@@ -217,51 +220,59 @@ void Watchy7SEG::drawSkatingUI() {
 
 		if (currentMillis - previousMillis > interval) {
       		previousMillis = currentMillis;
-
-			// Accel acc;   // <-- NOT BMA423::Accel
-			// float mag = sqrt(
-			//     (float)acc.x * acc.x +
-			//     (float)acc.y * acc.y +
-			//     (float)acc.z * acc.z
-			// );
-			// bool pushDetected = pushDetector.detect(mag);
-
+			
 			// Data
-			uint32_t steps = sensor.getCounter();
-			bool pushDetected = (steps > lastSteps);
-			lastSteps = steps;
-			session.update(pushDetected, getEpochTime());
+			bool res = sensor.getAccel(acc);
+			float mag = sqrt(
+			    (float)acc.x * acc.x +
+			    (float)acc.y * acc.y +
+			    (float)acc.z * acc.z
+			);
+			bool pushDetected = pushDetector.detect(mag);
+
+			//uint32_t steps = sensor.getCounter();
+			//bool pushDetected = (steps > lastSteps);
+			//lastSteps = steps;
+
+			session.update(pushDetected, mag, getEpochTime());
 			SessionData data = session.getData();
 
 			// Display
 			display.fillScreen(GxEPD_BLACK);
+			if (res == false) {
+				display.setCursor(0, 30);
+				display.println("getAccel FAIL");
+			} else {
+				display.setCursor(0, 20);
+				display.print("TIME ");
+				int minutes = data.elapsed / 60;
+				int seconds = data.elapsed % 60;
+				display.printf("%02d:%02d", minutes, seconds);
 
-			display.setCursor(0, 20);
-			display.print("TIME ");
-			int minutes = data.elapsed / 60;
-			int seconds = data.elapsed % 60;
-			display.printf("%02d:%02d", minutes, seconds);
+				display.setCursor(0, 60);
+				display.print("PUSH ");
+				display.print(data.pushCount);
 
-			display.setCursor(0, 60);
-			display.print("PUSH ");
-			display.print(data.pushCount);
+				display.setCursor(0, 80);
+				display.print("MAG ");
+				display.print(mag);
 
-			display.setCursor(0, 100);
-			display.print("DIST ");
-			display.print(data.distance / 1000.0);
-			display.print(" km");
+				display.setCursor(0, 100);
+				display.print("DIST ");
+				display.print(data.distance / 1000.0);
+				display.print(" km");
 
-			display.setCursor(0, 140);
-			display.print(data.running ? "RUN" : "PAUSE");
+				display.setCursor(0, 140);
+				display.print(data.running ? "RUN" : "PAUSE");
 
-			display.setCursor(35, 190);
-			int displayHour = currentTime.Hour;
-			if(displayHour < 10) { display.print("0"); }
-			display.print(displayHour);
-			display.print(":");
-			if(currentTime.Minute < 10) { display.print("0"); }
-			display.println(currentTime.Minute);
-
+				display.setCursor(35, 190);
+				int displayHour = currentTime.Hour;
+				if(displayHour < 10) { display.print("0"); }
+				display.print(displayHour);
+				display.print(":");
+				if(currentTime.Minute < 10) { display.print("0"); }
+				display.println(currentTime.Minute);
+			}
 			display.display(true); // full refresh
 		}
 	}
@@ -447,7 +458,7 @@ void Watchy7SEG::menu() {
 			setTime();
 			break;
 		case 3:
-			setupWifi();
+			showAccelerometer();
 			break;
 		case 4:
 			setupSecondaryWifi();
@@ -471,7 +482,7 @@ void Watchy7SEG::showMenu(byte menuIndex, bool partialRefresh) {
 
 	const char *menuItems[] = {
 		"About Watchy", "Skating", "Set Time",
-		"Setup WiFi", "Setup 2nd Wifi", "Sync NTP"
+		"Show Accelerometer", "Setup 2nd Wifi", "Sync NTP"
 	};
 	for (int i = 0; i < MENU_LENGTH; i++) {
 		yPos = MENU_HEIGHT + (MENU_HEIGHT * i);

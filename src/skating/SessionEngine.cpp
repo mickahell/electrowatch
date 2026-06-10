@@ -36,12 +36,12 @@ void SessionEngine::pause(uint32_t timeNow) {
     }
 }
 
-void SessionEngine::update(bool pushDetected, uint32_t timeNow) {
+void SessionEngine::update(bool pushDetected, float mag, uint32_t timeNow) {
     if (!sessionState.running) return;
 
     if (pushDetected) {
         sessionState.pushCount++;
-        sessionState.distance = sessionState.pushCount * 3;
+        sessionState.distance += fabs(mag - 1000) / 100 * 1.5;
     }
     sessionState.elapsed = sessionState.pausedElapsed + (timeNow - sessionState.sessionStartTime);
 }
