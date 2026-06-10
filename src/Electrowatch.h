@@ -12,6 +12,9 @@
 #include "sendData.h"
 #include "dataFile.h"
 
+#include "skating/SessionEngine.h"
+#include "skating/PushDetector.h"
+
 typedef struct blagueData {
   String type;
   String blague;
@@ -30,6 +33,7 @@ class Watchy7SEG : public Watchy{
         void downButton();
         void handleButtonPress();
         void drawWatchFace();
+        uint32_t getEpochTime();
 
         void drawTime();
         void drawDate();
@@ -41,6 +45,13 @@ class Watchy7SEG : public Watchy{
         void getBlagueDuJour(int nb_blague);
         void showJoke();
         void setupSecondaryWifi();
+
+		void updateSkating();
+		void drawSkatingUI();
+      
+    private:
+        SessionEngine session;
+        PushDetector pushDetector;
 };
 
 extern RTC_DATA_ATTR int PSTEPS;
@@ -49,5 +60,6 @@ extern RTC_DATA_ATTR blagueData BLAGUE_DU_JOUR;
 extern RTC_DATA_ATTR String WIFI_SSID;
 extern RTC_DATA_ATTR String WIFI_PASS;
 extern RTC_DATA_ATTR bool WIFI_2ND;
+extern RTC_DATA_ATTR bool skatingMode;
 
 #endif

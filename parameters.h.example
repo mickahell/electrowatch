@@ -44,4 +44,9 @@
 #define API_URL ""
 #define API_TOKEN ""
 
+// Skating App Settings
+#define SKATE_STRIDE_LENGTH 1.5     // Distance per push in meters (calibrate per user)
+#define SKATE_PUSH_THRESHOLD 0.10    // Acceleration threshold for push detection
+#define SKATE_DEBOUNCE_MS 200       // Debounce time in milliseconds
+
 #endif

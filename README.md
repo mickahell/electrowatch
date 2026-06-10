@@ -24,14 +24,13 @@ In order to build and upload the Watchy from cmd line :
 
 ```bash
 export SKETCH="electrowatch.ino"
+export PORT="/dev/ttyACM0"
 
 # v2
 export FQBN="esp32:esp32:watchy:Revision=v20,PartitionScheme=huge_app,UploadSpeed=921600,DebugLevel=none"
-export PORT="/dev/cu.wchusbserial56230332171"
 
 # v3
 export FQBN="esp32:esp32:esp32s3:FlashSize=8M,PartitionScheme=default_8MB,UploadSpeed=921600,DebugLevel=none,EraseFlash=none"
-export PORT="/dev/cu.usbmodem14101"
 ```
 
 You may need to replace the `--port` with your own.
@@ -41,7 +40,7 @@ You may need to replace the `--port` with your own.
 ```bash
 arduino-cli core update-index --additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 arduino-cli core install esp32:esp32@2.0.17
-arduino-cli lib install Watchy@1.4.14
+arduino-cli lib install Watchy@1.4.15
 ```
 
 #### Compile
@@ -77,3 +76,7 @@ Install [esptool.py](https://docs.espressif.com/projects/esptool/en/latest/esp32
 ```bash
 esptool.py --port ${PORT} erase_flash
 ```
+
+### Connect Windows port to WSL
+
+https://docs.espressif.com/projects/vscode-esp-idf-extension/en/latest/additionalfeatures/wsl.html
